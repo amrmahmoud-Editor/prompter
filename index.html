@@ -420,8 +420,8 @@ function openSession(){
     if(p>pos){pos=p;paint()}else if(committed>pos){pos=committed;paint()}
     if(allFinal&&listening){const age=performance.now()-r._t0;
       if(lineOf(pos)!==r._line)softRecycle(r,'sentence done');
-      else if(age>15000)softRecycle(r,'15s');
-      else if(e.results.length>=4)softRecycle(r,'4 results')}
+      else if(age>20000)softRecycle(r,'20s');
+      }
   };
   r.onerror=e=>{
     if(my!==gen)return;
@@ -429,15 +429,17 @@ function openSession(){
     else if(e.error==='network'){$('status').textContent=t('net')}
     dbg('error: '+e.error);
   };
-  r.onend=()=>{if(my!==gen||!listening)return;dbg('session ended by Chrome → reopen'); committed=pos; openSession()};
-  r.onstart=()=>dbg('session start #'+my);
+  r.onend=()=>{r._alive=false;if(my!==gen||!listening)return;dbg('session ended → reopen'); committed=pos; setTimeout(()=>{if(listening&&my===gen)openSession()},60)};
+  r.onstart=()=>{r._alive=true;r._started=performance.now();dbg('session start #'+my)};
   rec=r;r._t0=performance.now();r._line=lineOf(pos);r._soft=false;
-  try{r.start();lastHeard=performance.now()}catch(err){setTimeout(()=>listening&&my===gen&&openSession(),150)}
+  try{r.start();lastHeard=performance.now()}catch(err){dbg('start failed: '+err.message);setTimeout(()=>listening&&my===gen&&openSession(),200)}
+  setTimeout(()=>{if(listening&&my===gen&&!r._alive){dbg('session never started → retry');recycle()}},2500)
 }
 const LOG=[];function dbg(m){const t=new Date().toISOString().slice(11,23);LOG.push(t+' '+m);if(LOG.length>400)LOG.shift();const p=document.getElementById('dbg');if(p&&!p.hidden)p.textContent=LOG.slice(-60).join('\n')}
 function lineOf(i){const w=words[Math.min(i,words.length-1)];return w?w.el.parentElement:null}
 /* fresh session at a natural pause: stop() (not abort) lets Chrome finish the words it already heard, then onend opens a new one at once */
-function softRecycle(r,why){if(r._soft||!listening)return;r._soft=true;committed=pos;dbg('fresh session ('+why+')');try{r.stop()}catch(_){}}
+function softRecycle(r,why){if(r._soft||!listening)return;r._soft=true;committed=pos;dbg('fresh session ('+why+')');try{r.stop()}catch(_){}
+  setTimeout(()=>{if(listening&&rec===r){dbg('stop() hung → force new session');recycle()}},900)}
 function recycle(){committed=pos;const old=rec;gen++;try{old.onend=null;old.abort()}catch(_){}if(listening)openSession()}
 async function startRec(){
   if(words.length&&pos>=words.length){$('status').textContent=t('finishedStart');return}
@@ -449,6 +451,7 @@ async function startRec(){
   clearInterval(dog);
   dog=setInterval(()=>{
     if(!listening)return;const now=performance.now();
+    if(rec&&!rec._alive&&rec._started&&now-lastHeard>3000){lastHeard=now;dbg('watchdog: no live session → new');recycle();return}
     if(now-lastVoice<800&&now-lastHeard>4000){lastHeard=now;dbg('watchdog: restart (voice but no text 4s)');recycle()}
   },500);
 }
