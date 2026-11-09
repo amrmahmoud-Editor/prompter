@@ -418,6 +418,10 @@ function openSession(){
     $('heardTxt').textContent=shown.trim()||'—';
     dbg((allFinal?'FINAL ':'interim ')+'«'+shown.trim().slice(-60)+'» pos '+pos+'→'+Math.max(pos,p)+(words[p]?' next='+words[p].el.textContent:''));
     if(p>pos){pos=p;paint()}else if(committed>pos){pos=committed;paint()}
+    if(allFinal&&listening){const age=performance.now()-r._t0;
+      if(lineOf(pos)!==r._line)softRecycle(r,'sentence done');
+      else if(age>15000)softRecycle(r,'15s');
+      else if(e.results.length>=4)softRecycle(r,'4 results')}
   };
   r.onerror=e=>{
     if(my!==gen)return;
@@ -427,10 +431,13 @@ function openSession(){
   };
   r.onend=()=>{if(my!==gen||!listening)return;dbg('session ended by Chrome → reopen'); committed=pos; openSession()};
   r.onstart=()=>dbg('session start #'+my);
-  rec=r;
+  rec=r;r._t0=performance.now();r._line=lineOf(pos);r._soft=false;
   try{r.start();lastHeard=performance.now()}catch(err){setTimeout(()=>listening&&my===gen&&openSession(),150)}
 }
 const LOG=[];function dbg(m){const t=new Date().toISOString().slice(11,23);LOG.push(t+' '+m);if(LOG.length>400)LOG.shift();const p=document.getElementById('dbg');if(p&&!p.hidden)p.textContent=LOG.slice(-60).join('\n')}
+function lineOf(i){const w=words[Math.min(i,words.length-1)];return w?w.el.parentElement:null}
+/* fresh session at a natural pause: stop() (not abort) lets Chrome finish the words it already heard, then onend opens a new one at once */
+function softRecycle(r,why){if(r._soft||!listening)return;r._soft=true;committed=pos;dbg('fresh session ('+why+')');try{r.stop()}catch(_){}}
 function recycle(){committed=pos;const old=rec;gen++;try{old.onend=null;old.abort()}catch(_){}if(listening)openSession()}
 async function startRec(){
   if(words.length&&pos>=words.length){$('status').textContent=t('finishedStart');return}
