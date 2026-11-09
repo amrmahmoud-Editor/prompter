@@ -12,7 +12,7 @@
   --bg:#f6efe1; --fg:#2b2116; --said:#b9ad96; --cur:#b8760a; --curbg:rgba(240,168,32,.22);
   --panel:#211b12; --line:rgba(255,226,150,.16); --ui:#e6e2d6; --mut:#a9a08c; --accent:#ffd65c; --accent2:#1ab6c8; --hot:#ff7b5c; --ink:#2a1a05; --rec:#ff4d6d;
   --brand:linear-gradient(180deg,#fff6c8 0%,#ffd65c 32%,#f0a820 62%,#ce780e 86%,#ffc446 100%);
-  --fontEn:'Inter'; --fontAr:'Alexandria'; --size:56px; --lh:1.7; --width:900px;
+  --fontEn:'Inter'; --fontAr:'IBM Plex Sans Arabic'; --size:56px; --lh:1.7; --width:900px;
   --glass:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.04));
   --glass-h:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.07));
   --gshadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(0,0,0,.25),0 6px 18px rgba(0,0,0,.28);
@@ -26,7 +26,7 @@
 ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#fff6c8,#f0a820);background-clip:padding-box;border:2px solid transparent}
 ::-webkit-scrollbar-corner{background:transparent}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:'Inter','Alexandria',system-ui,sans-serif;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font-family:'Inter','IBM Plex Sans Arabic',system-ui,sans-serif;overflow:hidden}
 button,select,input,textarea{font:inherit;accent-color:#f0a820}
 ::selection{background:rgba(240,168,32,.45);color:#fff}
 /* top bar */
@@ -62,7 +62,8 @@ button,select,input,textarea{font:inherit;accent-color:#f0a820}
 /* language picker */
 .flag{width:20px;height:15px;border-radius:3px;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 #langBtn{max-width:230px}
-#langBtn .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#langBtn>span:first-child{white-space:nowrap;font-size:13px;opacity:.85}
+#langBtn .nm{white-space:nowrap;font-weight:700;letter-spacing:.3px;direction:ltr}
 #langPop{position:fixed;z-index:30;width:min(340px,calc(100vw - 24px));max-height:min(460px,70vh);display:flex;flex-direction:column;
   background:rgba(33,27,18,.92);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
 .sbox{display:flex;align-items:center;gap:8px;margin:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--line)}
@@ -78,10 +79,14 @@ button,select,input,textarea{font:inherit;accent-color:#f0a820}
 #stage{position:absolute;inset:0;overflow-y:auto;scroll-behavior:auto;scrollbar-width:thin;transform:scale(var(--fx,1),var(--fy,1))}
 #script{max-width:var(--width);margin:0 auto;padding:50vh 24px 60vh;font-family:var(--fontEn),var(--fontAr),sans-serif;font-size:var(--size);line-height:var(--lh);
   text-align:var(--align,start);font-weight:600}
-#script p{margin:0 0 .45em}
+#script p{margin:0 0 .5em}
+#script p::after{content:"";display:inline-block;width:.42em;height:.5em;margin-inline-start:.3em;vertical-align:.08em;background:#e5484d;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 12'%3E%3Cpath d='M1 6 9 1.2v9.6z' stroke='black' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 12'%3E%3Cpath d='M1 6 9 1.2v9.6z' stroke='black' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+#script p[dir=rtl]::after{transform:scaleX(-1)}
 .w{border-radius:.18em;padding:0 .06em;cursor:pointer;transition:color .2s,background .2s}
 .w.said{color:var(--said)}
-.w.cur{color:var(--cur);background:var(--curbg);box-shadow:0 .08em 0 var(--cur)}
+.w.cur{color:var(--cur);background:var(--curbg);border-radius:.28em;box-shadow:0 0 0 .2em var(--curbg),0 .27em 0 -.11em var(--cur);position:relative;z-index:1}
 #guide{position:fixed;inset-inline:0;top:50%;height:0;border-top:2px dashed color-mix(in srgb,var(--accent) 35%,transparent);pointer-events:none;z-index:2}
 #guide::before,#guide::after{content:"";position:absolute;top:-9px;border:8px solid transparent}
 #guide::before{right:4px;border-right-color:var(--accent)}
@@ -116,7 +121,7 @@ input[type=range]{height:6px}
 #dropTitle{color:#fff;font-weight:700;font-size:15px}
 
 #fileMsg{color:var(--ui)}
-#src{flex:1;resize:none;background:rgba(0,0,0,.25);color:#eee;border:1px solid var(--line);border-radius:12px;padding:16px;font-family:'Inter','Alexandria',sans-serif;font-size:20px;line-height:1.8;text-align:start}
+#src{flex:1;resize:none;background:rgba(0,0,0,.25);color:#eee;border:1px solid var(--line);border-radius:12px;padding:16px;font-family:'Inter','IBM Plex Sans Arabic',sans-serif;font-size:20px;line-height:1.8;text-align:start}
 .acts{display:flex;gap:10px;flex-wrap:wrap}
 .primary{background:linear-gradient(180deg,#fff6c8 0%,#ffd65c 32%,#f0a820 62%,#ce780e 86%,#ffc446 100%)!important;color:#2a1a05!important;border-color:rgba(255,240,190,.75)!important;font-weight:700}
 kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:12px}
@@ -132,6 +137,7 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
 .btn:hover::before{animation:sweep .9s ease}#mic::before{animation:sweep 3.6s ease-in-out infinite}
 @keyframes sweep{from{background-position:-200% 0}to{background-position:200% 0}}
 @media (prefers-reduced-motion:reduce){.w{transition:none}.btn::after,.btn::before,#mic::after,#mic::before,.primary::after,.sheet::after,#editor .box::after,#langPop::after{animation:none!important}}
+@media (max-width:1500px){#fsBtn [data-t],#resetBtn [data-t]{display:none}}
 @media (max-width:760px){.brand span{display:none}#bar{grid-template-columns:auto 1fr auto}}
 </style>
 </head>
@@ -146,7 +152,7 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
   <button class="btn" id="editBtn"><span>✎</span><span data-t="script"></span></button>
   <button class="btn" id="resetBtn" data-t-title="restartTip"><span>⟲</span><span data-t="restart"></span></button>
   <button class="btn" id="setBtn"><span>⚙</span><span data-t="settings"></span></button>
-  <button class="btn" id="langBtn" data-t-title="speechLang" aria-haspopup="listbox"><img class="flag" id="langFlag" alt=""><span class="nm" id="langName"></span><span aria-hidden="true">▾</span></button>
+  <button class="btn" id="langBtn" data-t-title="speechLangTip" aria-haspopup="listbox"><span data-t="speechLang"></span><img class="flag" id="langFlag" alt=""><b class="nm" id="langName"></b><span aria-hidden="true">▾</span></button>
   <span class="tg" role="group" id="alignGrp"><button id="aR" data-t-title="alignRight">⇥</button><button id="aC" data-t-title="alignCenter">≡</button><button id="aL" data-t-title="alignLeft">⇤</button><button id="aJ" data-t-title="justify">☰</button></span>
   <span class="tg" role="group" id="flipGrp"><button id="fH" data-t-title="flipH">⇆</button><button id="fV" data-t-title="flipV">⇅</button></span>
   <button class="btn" id="fsBtn"><span>⛶</span><span data-t="fullscreen"></span></button>
@@ -170,7 +176,7 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
   <div class="sub" data-t="themes"></div>
   <div class="themes" id="themes"></div>
   <div class="row"><label for="sFontAr" data-t="fontAr"></label>
-    <select id="sFontAr"><option>Alexandria</option><option>Readex Pro</option><option>Cairo</option><option>Tajawal</option><option>IBM Plex Sans Arabic</option><option>Noto Kufi Arabic</option><option>Almarai</option><option>Changa</option><option>Noto Naskh Arabic</option><option>Amiri</option></select><span></span></div>
+    <select id="sFontAr"><option>IBM Plex Sans Arabic</option><option>Alexandria</option><option>Readex Pro</option><option>Cairo</option><option>Tajawal</option><option>Noto Kufi Arabic</option><option>Almarai</option><option>Changa</option><option>Noto Naskh Arabic</option><option>Amiri</option></select><span></span></div>
   <div class="row"><label for="sFontEn" data-t="fontEn"></label>
     <select id="sFontEn"><option>Inter</option><option>Poppins</option><option>Montserrat</option><option>Roboto</option><option>Open Sans</option><option>Lato</option><option>Merriweather</option><option>Source Serif 4</option></select><span></span></div>
   <div class="row"><label for="sSize" data-t="size"></label><input type="range" id="sSize" min="24" max="140" step="2"><output id="oSize"></output></div>
@@ -217,7 +223,7 @@ const store={get(k,d){try{const v=localStorage.getItem('mlq_'+k);return v==null?
 
 /* ---------- UI language ---------- */
 const T={
- en:{spaceKey:'Space',start:'Start listening',stop:'Stop',script:'Script',restart:'Restart',restartTip:'Back to the beginning',settings:'Settings',speechLang:'Speech language',
+ en:{spaceKey:'Space',start:'Start listening',stop:'Stop',script:'Script',restart:'Restart',restartTip:'Back to the beginning',settings:'Settings',speechLang:'Script language',speechLangTip:'The language you will speak — set automatically from your script',
   alignRight:'Align right',alignCenter:'Center',alignLeft:'Align left',justify:'Justify',flipH:'Mirror horizontally',flipV:'Flip vertically',fullscreen:'Fullscreen',
   searchLang:'Search languages…',noLang:'No matching language',hearing:'Hearing:',uiLang:'Interface language',auto:'Automatic',themes:'Ready-made themes',fontAr:'Arabic font',fontEn:'English font',systemFont:'System font',
   size:'Font size',lh:'Line spacing',width:'Text width',fg:'Text color',bg:'Background',cur:'Current word',said:'Spoken words',pos:'Reading line position',sens:'Matching accuracy',
@@ -233,7 +239,7 @@ const T={
   fileErr:n=>`Couldn’t read “${n}”. Try saving it as .docx, .pdf or .txt.`,docOld:'Old .doc files aren’t supported. Save it as .docx and upload again.',
   fmtSafe:'Arranged. No words were changed.',fmtSkip:'Nothing to arrange.',
   th:{amrBeige:'Amr · Beige',amrCream:'Amr · Cream',amr:'Amr · Gold dark',amrCozy:'Amr · Cozy',amrTeal:'Amr · Teal',amrCoral:'Amr · Coral',night:'Night',black:'High contrast',studio:'Studio classic',forest:'Forest',plum:'Plum',sepia:'Warm brown',paper:'Paper',white:'White',sky:'Sky',mint:'Mint',kids:'Playful'}},
- ar:{spaceKey:'مسافة (Space)',start:'ابدأ الاستماع',stop:'إيقاف',script:'السكريبت',restart:'من الأول',restartTip:'ارجع لأول السكريبت',settings:'الإعدادات',speechLang:'لغة الكلام',
+ ar:{spaceKey:'مسافة (Space)',start:'ابدأ الاستماع',stop:'إيقاف',script:'السكريبت',restart:'من الأول',restartTip:'ارجع لأول السكريبت',settings:'الإعدادات',speechLang:'لغة السكريبت',speechLangTip:'اللغة اللي هتتكلم بيها — بتتحدد تلقائي من السكريبت',
   alignRight:'محاذاة يمين',alignCenter:'توسيط',alignLeft:'محاذاة شمال',justify:'ضبط الطرفين',flipH:'عكس أفقي (مراية)',flipV:'عكس رأسي',fullscreen:'ملء الشاشة',
   searchLang:'ابحث عن لغة…',noLang:'مفيش لغة بالاسم ده',hearing:'بسمعك:',uiLang:'لغة الموقع',auto:'تلقائي',themes:'ثيمات جاهزة',fontAr:'الخط العربي',fontEn:'الخط الإنجليزي',systemFont:'خط النظام',
   size:'حجم الخط',lh:'المسافة بين السطور',width:'عرض النص',fg:'لون النص',bg:'لون الخلفية',cur:'لون الكلمة الحالية',said:'لون اللي اتقال',pos:'مكان السطر الحالي',sens:'دقة المطابقة',
@@ -289,9 +295,36 @@ function sim(a,b){
   const d=lev(a2,b2); return 1-d/Math.max(a2.length,b2.length);
 }
 
+/* ---------- cross-script phonetic matching (English words said in an Arabic session and vice versa) ---------- */
+const AR2L={'ب':'b','ت':'t','ث':'s','ج':'g','ح':'h','خ':'k','د':'d','ذ':'z','ر':'r','ز':'z','س':'s','ش':'S','ص':'s','ض':'d','ط':'t','ظ':'z','غ':'g','ف':'f','ق':'k','ك':'k','ل':'l','م':'m','ن':'n','ه':'h','پ':'b','ڤ':'f','ڨ':'g','گ':'g','چ':'S'};
+function isArab(w){return /[\u0600-\u06FF]/.test(w)}
+function isLat(w){return /[a-z]/i.test(w)}
+function phon(w){
+  if(isArab(w)){let o='';for(const ch of w){const c=AR2L[ch];if(c)o+=c}return o.replace(/(.)\1+/g,'$1')}
+  let x=w.toLowerCase().replace(/[^a-z]/g,'');
+  x=x.replace(/tion/g,'Sn').replace(/ti(?=[aou])/g,'S').replace(/ci(?=[aou])/g,'S').replace(/sh|ch/g,'S').replace(/ph/g,'f').replace(/th/g,'t').replace(/ck/g,'k').replace(/qu/g,'k').replace(/x/g,'ks')
+   .replace(/c(?=[eiy])/g,'s').replace(/c/g,'k').replace(/q/g,'k').replace(/v/g,'f').replace(/p/g,'b').replace(/j/g,'g').replace(/[aeiouyw]/g,'').replace(/h$/,'');
+  return x.replace(/(.)\1+/g,'$1');
+}
+function phonOk(a,b){if(!a||!b||a.length<2||b.length<2)return false;if(a===b)return true;if(Math.min(a.length,b.length)<=3)return false;return 1-lev(a,b)/Math.max(a.length,b.length)>=0.74}
+
 /* ---------- state ---------- */
 let words=[],pos=0,committed=0;
-function textDir(t){const r=(t.match(/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/g)||[]).length,l=(t.match(/[A-Za-z\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF]/g)||[]).length;return r>=l&&r>0?'rtl':'ltr'}
+function detectLang(t){
+  const ws=t.split(/\s+/).filter(Boolean);const c=re=>{const one=new RegExp(re.source);return ws.filter(w=>one.test(w)).length};
+  const sc={ar:c(/[\u0600-\u06FF\u0750-\u077F]/g),he:c(/[\u0590-\u05FF]/g),ru:c(/[\u0400-\u04FF]/g),el:c(/[\u0370-\u03FF]/g),hi:c(/[\u0900-\u097F]/g),th:c(/[\u0E00-\u0E7F]/g),ja:c(/[\u3040-\u30FF]/g),ko:c(/[\uAC00-\uD7AF]/g),zh:c(/[\u4E00-\u9FFF]/g),lat:c(/[A-Za-z\u00C0-\u024F]/g)};
+  if(sc.ja)sc.ja+=sc.zh;
+  const top=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];if(!top||!top[1])return null;
+  const cur=S.lang.split('-')[0];
+  const fa=/[پچژگ]/.test(t),ur=/[ٹڈڑںے]/.test(t);
+  switch(top[0]){
+    case 'ar':return ur?'ur-PK':fa?'fa-IR':(cur==='ar'?S.lang:'ar-EG');
+    case 'he':return 'he-IL';case 'ru':return /[іїєґ]/i.test(t)?'uk-UA':(['ru','uk','bg','sr'].includes(cur)?S.lang:'ru-RU');
+    case 'el':return 'el-GR';case 'hi':return cur==='mr'||cur==='ne'?S.lang:'hi-IN';case 'th':return 'th-TH';case 'ja':return 'ja-JP';case 'ko':return 'ko-KR';case 'zh':return cur==='zh'||cur==='yue'?S.lang:'zh-CN';
+    default:{const latinLangs=/^(en|fr|es|pt|de|it|nl|sv|da|nb|fi|is|pl|cs|sk|hu|ro|hr|sl|lt|lv|et|ca|eu|gl|tr|az|id|ms|fil|jv|su|vi|sw|zu|af|so|ha|yo|uz)$/;return latinLangs.test(cur)?S.lang:'en-US'}
+  }
+}
+function textDir(t){const ws=t.split(/\s+/);const r=ws.filter(w=>/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(w)).length,l=ws.filter(w=>/[A-Za-z\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF]/.test(w)).length;return r>=l&&r>0?'rtl':'ltr'}
 function render(text){
   const box=$('script'); box.innerHTML=''; words=[];
   text.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
@@ -300,7 +333,7 @@ function render(text){
       if(i)p.appendChild(document.createTextNode(' '));
       const s=document.createElement('span'); s.className='w'; s.textContent=tok;
       const n=norm(tok);
-      if(n){const idx=words.length; s.dataset.i=idx; words.push({el:s,n}); s.onclick=()=>jump(idx);}
+      if(n){const idx=words.length; s.dataset.i=idx; words.push({el:s,n,lat:isLat(tok),ar:isArab(tok),ph:phon(tok)}); s.onclick=()=>jump(idx);}
       p.appendChild(s);
     });
     box.appendChild(p);
@@ -333,7 +366,8 @@ const STOP=new Set(['في','من','علي','على','ان','انا','انت','د
  'the','a','an','and','or','to','of','in','on','at','is','it','i','you','we','so','uh','um','this','that','for','with','be','are','was']);
 const SENS={strict:0.82,normal:0.72,loose:0.62};
 function need(x){const b=SENS[S.sens]||0.72; return x.length<=2?1:(x.length<=4?Math.min(.95,b+.1):b)}
-function m(x,wi){return wi<words.length&&sim(x,words[wi].n)>=need(x)}
+function m(x,wi){if(wi>=words.length)return false;const w=words[wi];if(sim(x,w.n)>=need(x))return true;
+  if((w.lat&&isArab(x))||(w.ar&&isLat(x)))return phonOk(phon(x),w.ph);return false}
 function align(from,toks){
   const tk=toks.map(norm).filter(Boolean); let p=from,i=0;
   while(i<tk.length&&p<words.length){
@@ -536,7 +570,7 @@ function openEditor(){$('src').value=store.get('script',UI==='ar'?SAMPLE_AR:SAMP
 $('editBtn').onclick=openEditor;
 $('cancelEdit').onclick=()=>$('editor').hidden=true;
 $('fmtBtn').onclick=()=>{const r=formatScript($('src').value);$('src').value=r.text;$('fileMsg').textContent=r.changed?t('fmtSafe'):t('fmtSkip')};
-$('useBtn').onclick=()=>{const v=$('src').value.trim();if(!v)return;store.set('script',v);S.align='auto';applySettings();render(v);$('editor').hidden=true};
+$('useBtn').onclick=()=>{const v=$('src').value.trim();if(!v)return;store.set('script',v);S.align='auto';const dl=detectLang(v);if(dl)S.lang=dl;applySettings();render(v);$('editor').hidden=true};
 $('resetBtn').onclick=()=>jump(0);
 
 /* ---------- speech languages ---------- */
@@ -544,7 +578,8 @@ const LANGS=[["ar-EG", "العربية (مصر)", "Arabic (Egypt)"], ["ar-SA", "
 const RTL=/^(ar|he|iw|fa|ur)(-|$)/;
 const flagUrl=c=>{const r=c.split('-').pop().toLowerCase();return `https://flagcdn.com/w40/${r}.png`};
 function langInfo(c){return LANGS.find(l=>l[0]===c)||LANGS[0]}
-function showLang(){const l=langInfo(S.lang);$('langFlag').src=flagUrl(l[0]);$('langFlag').alt=l[2];$('langName').textContent=l[1]}
+function langCode(c){const p=c.split('-');return (p[0]+'-'+p[p.length-1]).toUpperCase()}
+function showLang(){const l=langInfo(S.lang);$('langFlag').src=flagUrl(l[0]);$('langFlag').alt=l[2];$('langName').textContent=langCode(l[0]);$('langBtn').title=t('speechLangTip')+': '+l[1]}
 let hiIdx=0,shown=[];
 function fillLangs(q){
   q=(q||'').trim().toLowerCase();const qn=norm(q);
@@ -572,7 +607,7 @@ $('langQ').onkeydown=e=>{const items=[...$('langList').querySelectorAll('li[role
 document.addEventListener('click',e=>{if(!$('langPop').hidden&&!$('langPop').contains(e.target))closeLang()});
 
 /* ---------- settings ---------- */
-const DEF={fontAr:'Alexandria',fontEn:'Inter',size:56,lh:1.7,width:900,fg:'#2b2116',bg:'#f6efe1',cur:'#b8760a',said:'#b9ad96',pos:45,lang:'en-US',sens:'normal',align:'auto',fx:false,fy:false,theme:'amrBeige',ui:'en',brand4:true,dirfix:true};
+const DEF={fontAr:'IBM Plex Sans Arabic',fontEn:'Inter',size:56,lh:1.7,width:900,fg:'#2b2116',bg:'#f6efe1',cur:'#b8760a',said:'#b9ad96',pos:45,lang:'en-US',sens:'normal',align:'auto',fx:false,fy:false,theme:'amrBeige',ui:'en',brand4:true,dirfix:true,ibm:true};
 const THEMES={amrBeige:['#f6efe1','#2b2116','#b8760a','#b9ad96'],amrCream:['#fffaf0','#1f1a12','#c98a0e','#c4b9a2'],amr:['#0f0d0a','#fff6e0','#ffd65c','#5c5444'],amrCozy:['#1c140a','#fff1d2','#ffc446','#6e5e44'],amrTeal:['#071a1f','#eafcff','#1ab6c8','#3f5866'],amrCoral:['#17110f','#fff0ea','#ff7b5c','#5e4e48'],night:['#121212','#f2efe8','#ffc23d','#5c5c5c'],black:['#000000','#ffffff','#ffe14d','#4d4d4d'],studio:['#050505','#f2f2f2','#2fd3ff','#555a60'],forest:['#0f1f17','#e6f2ea','#7ee2a8','#4f6b5b'],plum:['#1b1028','#f1e9fb','#ff9ad5','#6c5a80'],sepia:['#2a1f16','#f6e7d2','#ffb35c','#7a6551'],paper:['#f7f2e7','#1f1b14','#c2410c','#b3aa98'],white:['#ffffff','#111418','#1565ff','#a7adb7'],sky:['#e9f4ff','#0d2236','#e85d04','#9db3c8'],mint:['#ecf8f1','#123222','#0f8a5f','#9ab8a7'],kids:['#fff6d6','#2b2440','#ff4f8b','#b9ae8c']};
 const saved=store.get('settings',null);
 let S=Object.assign({},DEF,saved||{});
@@ -580,6 +615,7 @@ let S=Object.assign({},DEF,saved||{});
 if(!LANGS.some(l=>l[0]===S.lang))S.lang=DEF.lang;
 if(saved&&!saved.brand4){S.brand4=true;Object.assign(S,{theme:'amrBeige',bg:'#f6efe1',fg:'#2b2116',cur:'#b8760a',said:'#b9ad96',ui:'en',fontAr:'Alexandria',fontEn:'Inter'})}
 if(saved&&!saved.dirfix){S.dirfix=true;S.align='auto'}
+if(saved&&!saved.ibm){S.ibm=true;S.fontAr='IBM Plex Sans Arabic'}
 if(!S.fontAr)S.fontAr='Alexandria';if(!S.fontEn)S.fontEn='Inter';
 function applySettings(){
   const r=document.documentElement.style;
