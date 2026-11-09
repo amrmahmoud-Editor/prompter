@@ -77,7 +77,7 @@ button,select,input,textarea{font:inherit;accent-color:#f0a820}
 /* stage */
 #stage{position:absolute;inset:0;overflow-y:auto;scroll-behavior:auto;scrollbar-width:thin;transform:scale(var(--fx,1),var(--fy,1))}
 #script{max-width:var(--width);margin:0 auto;padding:50vh 24px 60vh;font-family:var(--fontEn),var(--fontAr),sans-serif;font-size:var(--size);line-height:var(--lh);
-  direction:var(--dir,rtl);text-align:var(--align,right);font-weight:600}
+  text-align:var(--align,start);font-weight:600}
 #script p{margin:0 0 .45em}
 .w{border-radius:.18em;padding:0 .06em;cursor:pointer;transition:color .2s,background .2s}
 .w.said{color:var(--said)}
@@ -291,10 +291,11 @@ function sim(a,b){
 
 /* ---------- state ---------- */
 let words=[],pos=0,committed=0;
+function textDir(t){const r=(t.match(/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/g)||[]).length,l=(t.match(/[A-Za-z\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF]/g)||[]).length;return r>=l&&r>0?'rtl':'ltr'}
 function render(text){
   const box=$('script'); box.innerHTML=''; words=[];
   text.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
-    const p=document.createElement('p');
+    const p=document.createElement('p');p.dir=textDir(line);
     line.split(/\s+/).forEach((tok,i)=>{
       if(i)p.appendChild(document.createTextNode(' '));
       const s=document.createElement('span'); s.className='w'; s.textContent=tok;
@@ -535,7 +536,7 @@ function openEditor(){$('src').value=store.get('script',UI==='ar'?SAMPLE_AR:SAMP
 $('editBtn').onclick=openEditor;
 $('cancelEdit').onclick=()=>$('editor').hidden=true;
 $('fmtBtn').onclick=()=>{const r=formatScript($('src').value);$('src').value=r.text;$('fileMsg').textContent=r.changed?t('fmtSafe'):t('fmtSkip')};
-$('useBtn').onclick=()=>{const v=$('src').value.trim();if(!v)return;store.set('script',v);render(v);$('editor').hidden=true};
+$('useBtn').onclick=()=>{const v=$('src').value.trim();if(!v)return;store.set('script',v);S.align='auto';applySettings();render(v);$('editor').hidden=true};
 $('resetBtn').onclick=()=>jump(0);
 
 /* ---------- speech languages ---------- */
@@ -557,7 +558,7 @@ function fillLangs(q){
     const nm=document.createElement('span');nm.textContent=l[1];const sm=document.createElement('small');sm.textContent=l[2]===l[1]?l[0]:l[2];
     li.append(img,nm,sm);li.onclick=()=>pickLang(l[0]);ul.appendChild(li)});
 }
-function pickLang(c){S.lang=c;S.align=RTL.test(c)?'right':'left';closeLang();applySettings();paint(true);if(listening){stop();startRec()}}
+function pickLang(c){S.lang=c;closeLang();applySettings();paint(true);if(listening){stop();startRec()}}
 function openLang(){const b=$('langBtn').getBoundingClientRect(),p=$('langPop');p.hidden=false;
   const w=p.offsetWidth;let x=document.documentElement.dir==='rtl'?b.right-w:b.left;x=Math.max(12,Math.min(x,innerWidth-w-12));p.style.left=x+'px';p.style.top=(b.bottom+8)+'px';
   $('langQ').value='';fillLangs('');$('langQ').focus();const s=$('langList').querySelector('.sel');s&&s.scrollIntoView({block:'center'})}
@@ -571,19 +572,20 @@ $('langQ').onkeydown=e=>{const items=[...$('langList').querySelectorAll('li[role
 document.addEventListener('click',e=>{if(!$('langPop').hidden&&!$('langPop').contains(e.target))closeLang()});
 
 /* ---------- settings ---------- */
-const DEF={fontAr:'Alexandria',fontEn:'Inter',size:56,lh:1.7,width:900,fg:'#2b2116',bg:'#f6efe1',cur:'#b8760a',said:'#b9ad96',pos:45,lang:'en-US',sens:'normal',align:'left',fx:false,fy:false,theme:'amrBeige',ui:'en',brand4:true};
+const DEF={fontAr:'Alexandria',fontEn:'Inter',size:56,lh:1.7,width:900,fg:'#2b2116',bg:'#f6efe1',cur:'#b8760a',said:'#b9ad96',pos:45,lang:'en-US',sens:'normal',align:'auto',fx:false,fy:false,theme:'amrBeige',ui:'en',brand4:true,dirfix:true};
 const THEMES={amrBeige:['#f6efe1','#2b2116','#b8760a','#b9ad96'],amrCream:['#fffaf0','#1f1a12','#c98a0e','#c4b9a2'],amr:['#0f0d0a','#fff6e0','#ffd65c','#5c5444'],amrCozy:['#1c140a','#fff1d2','#ffc446','#6e5e44'],amrTeal:['#071a1f','#eafcff','#1ab6c8','#3f5866'],amrCoral:['#17110f','#fff0ea','#ff7b5c','#5e4e48'],night:['#121212','#f2efe8','#ffc23d','#5c5c5c'],black:['#000000','#ffffff','#ffe14d','#4d4d4d'],studio:['#050505','#f2f2f2','#2fd3ff','#555a60'],forest:['#0f1f17','#e6f2ea','#7ee2a8','#4f6b5b'],plum:['#1b1028','#f1e9fb','#ff9ad5','#6c5a80'],sepia:['#2a1f16','#f6e7d2','#ffb35c','#7a6551'],paper:['#f7f2e7','#1f1b14','#c2410c','#b3aa98'],white:['#ffffff','#111418','#1565ff','#a7adb7'],sky:['#e9f4ff','#0d2236','#e85d04','#9db3c8'],mint:['#ecf8f1','#123222','#0f8a5f','#9ab8a7'],kids:['#fff6d6','#2b2440','#ff4f8b','#b9ae8c']};
 const saved=store.get('settings',null);
 let S=Object.assign({},DEF,saved||{});
 
 if(!LANGS.some(l=>l[0]===S.lang))S.lang=DEF.lang;
 if(saved&&!saved.brand4){S.brand4=true;Object.assign(S,{theme:'amrBeige',bg:'#f6efe1',fg:'#2b2116',cur:'#b8760a',said:'#b9ad96',ui:'en',fontAr:'Alexandria',fontEn:'Inter'})}
+if(!S.dirfix){S.dirfix=true;S.align='auto'}
 if(!S.fontAr)S.fontAr='Alexandria';if(!S.fontEn)S.fontEn='Inter';
 function applySettings(){
   const r=document.documentElement.style;
   r.setProperty('--fontAr',"'"+S.fontAr+"'");r.setProperty('--fontEn',"'"+S.fontEn+"'");r.setProperty('--size',S.size+'px');r.setProperty('--lh',S.lh);r.setProperty('--width',S.width+'px');
   r.setProperty('--fg',S.fg);r.setProperty('--bg',S.bg);r.setProperty('--cur',S.cur);r.setProperty('--said',S.said);r.setProperty('--curbg',S.cur+'29');
-  r.setProperty('--dir',RTL.test(S.lang)?'rtl':'ltr');r.setProperty('--align',S.align);r.setProperty('--fx',S.fx?-1:1);r.setProperty('--fy',S.fy?-1:1);
+  r.setProperty('--align',S.align==='auto'?'start':S.align);r.setProperty('--fx',S.fx?-1:1);r.setProperty('--fy',S.fy?-1:1);
   $('guide').style.top=(S.fy?100-S.pos:S.pos)+'%';
   showLang();
   [['aR','right'],['aC','center'],['aL','left'],['aJ','justify']].forEach(([id,v])=>$(id).classList.toggle('act',S.align===v));
@@ -597,7 +599,7 @@ function applySettings(){
 const map={sFontAr:'fontAr',sFontEn:'fontEn',sSize:'size',sLh:'lh',sWidth:'width',sFg:'fg',sBg:'bg',sCur:'cur',sSaid:'said',sPos:'pos',sSens:'sens'};
 for(const id in map)$(id).addEventListener('input',e=>{const v=e.target.value,k=map[id];S[k]=['size','width','pos','lh'].includes(k)?+v:v;if(['fg','bg','cur','said'].includes(k))S.theme='custom';applySettings();paint(true)});
 $('sUi').onchange=e=>{S.ui=e.target.value;applySettings();applyUi()};
-[['aR','right'],['aC','center'],['aL','left'],['aJ','justify']].forEach(([id,v])=>$(id).onclick=()=>{S.align=v;applySettings();paint(true)});
+[['aR','right'],['aC','center'],['aL','left'],['aJ','justify']].forEach(([id,v])=>$(id).onclick=()=>{S.align=S.align===v?'auto':v;applySettings();paint(true)});
 $('fH').onclick=()=>{S.fx=!S.fx;applySettings()};
 $('fV').onclick=()=>{S.fy=!S.fy;applySettings();paint(true)};
 for(const k in THEMES){const [bg,fg,cur]=THEMES[k];const b=document.createElement('button');b.className='th';b.dataset.k=k;b.style.background=bg;b.style.color=fg;b.style.borderBottom='4px solid '+cur;
