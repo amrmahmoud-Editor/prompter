@@ -167,6 +167,7 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
 
 <div id="stage"><div id="script"></div></div>
 <div id="guide"></div>
+<pre id="dbg" hidden style="position:fixed;z-index:40;inset:70px 16px auto auto;width:min(560px,90vw);max-height:60vh;overflow:auto;background:rgba(0,0,0,.85);color:#9ef59e;font:12px/1.4 monospace;padding:10px;border-radius:10px;white-space:pre-wrap;direction:ltr"></pre>
 <div id="heard"><span id="lvl"><i id="lvlBar"></i></span> <span data-t="hearing"></span> <b id="heardTxt">—</b><span id="status"></span></div>
 
 <div class="sheet" id="settings" hidden>
@@ -380,6 +381,8 @@ function align(from,toks){
     for(let k=1;k<=4&&!ok;k++){
       if(i+1<tk.length&&m(tk[i],p+k)&&m(tk[i+1],p+k+1)&&!(STOP.has(tk[i])&&STOP.has(tk[i+1]))){p=p+k+2;i+=2;ok=true}
     }
+    // 2b) one confident long word a step or two ahead (the recognizer garbled the word before it)
+    if(!ok&&tk[i].length>=5&&!STOP.has(tk[i])){for(let k=1;k<=2&&!ok;k++){const w=words[p+k];if(w&&w.n.length>=5&&sim(tk[i],w.n)>=0.86){p=p+k+1;i++;ok=true}}}
     if(!ok&&i+2<tk.length){
       for(let q=p+5;q<Math.min(words.length-2,p+120)&&!ok;q++){
         if(m(tk[i],q)&&m(tk[i+1],q+1)&&m(tk[i+2],q+2)){
@@ -413,18 +416,21 @@ function openSession(){
       if(x.isFinal&&allFinal)committed=p; else allFinal=false;
     }
     $('heardTxt').textContent=shown.trim()||'—';
+    dbg((allFinal?'FINAL ':'interim ')+'«'+shown.trim().slice(-60)+'» pos '+pos+'→'+Math.max(pos,p)+(words[p]?' next='+words[p].el.textContent:''));
     if(p>pos){pos=p;paint()}else if(committed>pos){pos=committed;paint()}
-    if(listening&&allFinal&&e.results.length>=6)recycle();
   };
   r.onerror=e=>{
     if(my!==gen)return;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){denied++;if(mStream&&denied<4)return;$('status').textContent=t('srDenied');stop()}
     else if(e.error==='network'){$('status').textContent=t('net')}
+    dbg('error: '+e.error);
   };
-  r.onend=()=>{if(my!==gen||!listening)return; committed=pos; openSession()};
+  r.onend=()=>{if(my!==gen||!listening)return;dbg('session ended by Chrome → reopen'); committed=pos; openSession()};
+  r.onstart=()=>dbg('session start #'+my);
   rec=r;
   try{r.start();lastHeard=performance.now()}catch(err){setTimeout(()=>listening&&my===gen&&openSession(),150)}
 }
+const LOG=[];function dbg(m){const t=new Date().toISOString().slice(11,23);LOG.push(t+' '+m);if(LOG.length>400)LOG.shift();const p=document.getElementById('dbg');if(p&&!p.hidden)p.textContent=LOG.slice(-60).join('\n')}
 function recycle(){committed=pos;const old=rec;gen++;try{old.onend=null;old.abort()}catch(_){}if(listening)openSession()}
 async function startRec(){
   if(words.length&&pos>=words.length){$('status').textContent=t('finishedStart');return}
@@ -436,7 +442,7 @@ async function startRec(){
   clearInterval(dog);
   dog=setInterval(()=>{
     if(!listening)return;const now=performance.now();
-    if(now-lastVoice<800&&now-lastHeard>2500){lastHeard=now;recycle()}
+    if(now-lastVoice<800&&now-lastHeard>4000){lastHeard=now;dbg('watchdog: restart (voice but no text 4s)');recycle()}
   },500);
 }
 function stop(){listening=false;clearInterval(dog);stopMeter();gen++;try{rec&&rec.abort()}catch(_){}committed=pos;setMic()}
@@ -647,6 +653,7 @@ $('fsBtn').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen()
 
 /* ---------- keys ---------- */
 document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.shiftKey&&(e.key==='D'||e.key==='d')){e.preventDefault();const p=$('dbg');p.hidden=!p.hidden;p.textContent=LOG.slice(-60).join('\n');return}
   if(!$('editor').hidden||!$('langPop').hidden||['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;
   if(e.code==='Space'){e.preventDefault();listening?stop():startRec()}
   else if(e.key==='ArrowDown'){e.preventDefault();jump(pos+1)}
