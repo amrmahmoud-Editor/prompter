@@ -22,9 +22,9 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:'Inter','IBM Plex Sans Arabic','Cairo',system-ui,sans-serif;overflow:hidden}
 button,select,input,textarea{font:inherit}
 /* top bar */
-#bar{position:fixed;inset:0 0 auto 0;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+#bar{position:fixed;inset:0 0 auto 0;z-index:5;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;direction:ltr;
   padding:10px 16px;background:rgba(18,21,29,.55);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line)}
-.brand{display:inline-flex;align-items:center;gap:8px;margin-inline-end:6px;color:#fff;font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap;direction:ltr}
+.brand{justify-self:start;display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap;direction:ltr}
 .brand svg{width:26px;height:26px;flex:none}
 /* glass controls */
 .btn,.tg button,.glass{background:var(--glass);color:var(--ui);border:1px solid var(--line);border-radius:12px;padding:8px 14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;
@@ -43,7 +43,10 @@ button,select,input,textarea{font:inherit}
 .tg button:last-child{border-start-end-radius:12px;border-end-end-radius:12px}
 .tg button+button{border-inline-start:0}
 .tg button.act{background:linear-gradient(180deg,rgba(255,206,92,.9),rgba(255,176,32,.75));color:#1a1300;font-weight:700}
-#status{font-size:13px;color:var(--mut);margin-inline-start:auto;max-width:40ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ctrls{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;direction:var(--uidir,ltr)}
+#side{justify-self:end;display:flex;align-items:center;gap:10px;min-width:0}
+#status{position:absolute;inset-inline-end:16px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--mut);background:rgba(18,21,29,.9);padding-inline-start:12px}
+#me{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;border:2px solid rgba(255,255,255,.35);box-shadow:0 4px 14px rgba(0,0,0,.35)}
 #heard{position:fixed;inset:auto 0 0 0;z-index:5;padding:8px 16px;font-size:15px;color:var(--mut);background:rgba(18,21,29,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lvl{display:inline-block;width:70px;height:8px;border-radius:4px;background:#2a2f3b;overflow:hidden;vertical-align:middle;margin-inline-end:8px}#lvl i{display:block;height:100%;width:0;background:#3ddc84;transition:width .08s}
 #heard b{color:var(--ui);font-weight:600}
@@ -99,7 +102,7 @@ select option{background:#1b1f29}
 .primary{background:linear-gradient(180deg,rgba(255,206,92,.95),rgba(255,176,32,.85))!important;color:#1a1300!important;border-color:rgba(255,230,160,.7)!important;font-weight:700}
 kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:12px}
 @media (prefers-reduced-motion:reduce){.w{transition:none}}
-@media (max-width:760px){.brand span{display:none}#status{display:none}}
+@media (max-width:760px){.brand span{display:none}#bar{grid-template-columns:auto 1fr auto}}
 </style>
 </head>
 <body>
@@ -108,6 +111,7 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
     <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="36" rx="7" fill="#ffc23d"/><rect x="14" y="17" width="36" height="4" rx="2" fill="#1a1300"/><rect x="14" y="25" width="28" height="4" rx="2" fill="#1a1300" opacity=".55"/><rect x="14" y="33" width="32" height="4" rx="2" fill="#1a1300" opacity=".3"/><rect x="29" y="44" width="6" height="8" fill="#ffc23d"/><rect x="20" y="52" width="24" height="5" rx="2.5" fill="#ffc23d"/></svg>
     <span>Online Teleprompter</span>
   </div>
+  <div id="ctrls">
   <button class="btn" id="mic" data-t-title="spaceKey"><span class="dot"></span><span id="micTxt"></span></button>
   <button class="btn" id="editBtn"><span>✎</span><span data-t="script"></span></button>
   <button class="btn" id="resetBtn" data-t-title="restartTip"><span>⟲</span><span data-t="restart"></span></button>
@@ -116,7 +120,8 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
   <span class="tg" role="group" id="alignGrp"><button id="aR" data-t-title="alignRight">⇥</button><button id="aC" data-t-title="alignCenter">≡</button><button id="aL" data-t-title="alignLeft">⇤</button><button id="aJ" data-t-title="justify">☰</button></span>
   <span class="tg" role="group" id="flipGrp"><button id="fH" data-t-title="flipH">⇆</button><button id="fV" data-t-title="flipV">⇅</button></span>
   <button class="btn" id="fsBtn"><span>⛶</span><span data-t="fullscreen"></span></button>
-  <span id="status"></span>
+  </div>
+  <div id="side"><img id="me" alt="Amr Mahmoud" title="Amr Mahmoud" src="data:image/jpeg;base64,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"></div>
 </div>
 
 <div id="langPop" hidden role="dialog">
@@ -126,7 +131,7 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
 
 <div id="stage"><div id="script"></div></div>
 <div id="guide"></div>
-<div id="heard"><span id="lvl"><i id="lvlBar"></i></span> <span data-t="hearing"></span> <b id="heardTxt">—</b></div>
+<div id="heard"><span id="lvl"><i id="lvlBar"></i></span> <span data-t="hearing"></span> <b id="heardTxt">—</b><span id="status"></span></div>
 
 <div class="sheet" id="settings" hidden>
   <h2 data-t="settings"></h2>
@@ -220,7 +225,7 @@ let UI='en';
 function t(k,...a){const v=(T[UI]&&T[UI][k])??T.en[k];return typeof v==='function'?v(...a):v}
 function resolveUi(){const p=(S&&S.ui)||'auto';if(p!=='auto')return p;const nl=(navigator.languages||[navigator.language||'en']).join(',').toLowerCase();return /(^|,)ar/.test(nl)?'ar':'en'}
 function applyUi(){
-  UI=resolveUi();document.documentElement.lang=UI;document.documentElement.dir=UI==='ar'?'rtl':'ltr';
+  UI=resolveUi();document.documentElement.lang=UI;document.documentElement.dir=UI==='ar'?'rtl':'ltr';document.documentElement.style.setProperty('--uidir',UI==='ar'?'rtl':'ltr');
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
   document.querySelectorAll('[data-t-title]').forEach(e=>e.title=t(e.dataset.tTitle));
   document.querySelectorAll('[data-t-ph]').forEach(e=>e.placeholder=t(e.dataset.tPh));
