@@ -86,7 +86,7 @@ button,select,input,textarea{font:inherit;accent-color:#f0a820}
 #script p[dir=rtl]::after{transform:scaleX(-1)}
 .w{border-radius:.18em;padding:0 .06em;cursor:pointer;transition:color .2s,background .2s}
 .w.said{color:var(--said)}
-.w.cur{color:var(--cur);background:var(--curbg);border-radius:.28em;box-shadow:0 0 0 .2em var(--curbg),0 .27em 0 -.11em var(--cur);position:relative;z-index:1}
+.w.cur{color:var(--cur);--hl:color-mix(in srgb,var(--cur) 18%,var(--bg));background:var(--hl);border-radius:.28em;box-shadow:0 0 0 .2em var(--hl),0 .07em 0 .2em var(--cur);position:relative;z-index:1}
 #guide{position:fixed;inset-inline:0;top:50%;height:0;border-top:2px dashed color-mix(in srgb,var(--accent) 35%,transparent);pointer-events:none;z-index:2}
 #guide::before,#guide::after{content:"";position:absolute;top:-9px;border:8px solid transparent}
 #guide::before{right:4px;border-right-color:var(--accent)}
