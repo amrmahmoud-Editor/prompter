@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Online Teleprompter</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='52' height='36' rx='7' fill='%23ffc23d'/%3E%3Crect x='14' y='17' width='36' height='4' rx='2' fill='%231a1300'/%3E%3Crect x='14' y='25' width='28' height='4' rx='2' fill='%231a1300' opacity='.55'/%3E%3Crect x='14' y='33' width='32' height='4' rx='2' fill='%231a1300' opacity='.3'/%3E%3Crect x='29' y='44' width='6' height='8' fill='%23ffc23d'/%3E%3Crect x='20' y='52' width='24' height='5' rx='2.5' fill='%23ffc23d'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%238b5cf6%27/%3E%3Cstop offset=%271%27 stop-color=%27%2322d3ee%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x=%276%27 y=%278%27 width=%2752%27 height=%2736%27 rx=%278%27 fill=%27url(%23g)%27/%3E%3Crect x=%2714%27 y=%2717%27 width=%2736%27 height=%274%27 rx=%272%27 fill=%27white%27/%3E%3Crect x=%2714%27 y=%2725%27 width=%2728%27 height=%274%27 rx=%272%27 fill=%27white%27 opacity=%27.6%27/%3E%3Crect x=%2714%27 y=%2733%27 width=%2732%27 height=%274%27 rx=%272%27 fill=%27%23ff8a3d%27/%3E%3Crect x=%2720%27 y=%2752%27 width=%2724%27 height=%275%27 rx=%272.5%27 fill=%27%236366f1%27/%3E%3Crect x=%2729%27 y=%2744%27 width=%276%27 height=%278%27 fill=%27%236366f1%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Tajawal:wght@400;700;800&family=Noto+Naskh+Arabic:wght@400;700&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700&display=swap">
 <style>
 :root{
-  --bg:#0d0f14; --fg:#f4f1e8; --said:#5f6675; --cur:#ffc23d; --curbg:rgba(255,194,61,.16);
-  --panel:#151821; --line:rgba(255,255,255,.12); --ui:#d5d9e3; --mut:#8b92a3; --accent:#ffc23d; --rec:#ff4d4d;
+  --bg:#0a0e1f; --fg:#f1f3ff; --said:#4b5275; --cur:#ff9a3d; --curbg:rgba(255,154,61,.16);
+  --panel:#12162b; --line:rgba(170,160,255,.16); --ui:#d9dcf2; --mut:#8a90b4; --accent:#a78bfa; --accent2:#22d3ee; --hot:#ff8a3d; --rec:#ff4d6d;
+  --brand:linear-gradient(135deg,#8b5cf6 0%,#6366f1 50%,#22d3ee 100%);
   --font:'Cairo',sans-serif; --size:56px; --lh:1.7; --width:900px;
   --glass:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.04));
   --glass-h:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.07));
@@ -18,21 +19,29 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+*{scrollbar-width:thin;scrollbar-color:#7c5cf6 rgba(255,255,255,.05)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:10px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#8b5cf6,#22d3ee);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#a78bfa,#67e8f9);background-clip:padding-box;border:2px solid transparent}
+::-webkit-scrollbar-corner{background:transparent}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:'Inter','IBM Plex Sans Arabic','Cairo',system-ui,sans-serif;overflow:hidden}
-button,select,input,textarea{font:inherit}
+button,select,input,textarea{font:inherit;accent-color:#8b5cf6}
+::selection{background:rgba(139,92,246,.45);color:#fff}
 /* top bar */
 #bar{position:fixed;inset:0 0 auto 0;z-index:5;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;direction:ltr;
-  padding:10px 16px;background:rgba(18,21,29,.55);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line)}
+  padding:10px 16px;background:rgba(12,15,34,.55);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line)}
 .brand{justify-self:start;display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap;direction:ltr}
-.brand svg{width:26px;height:26px;flex:none}
+.brand svg{width:28px;height:28px;flex:none}
+.brand span{background:linear-gradient(90deg,#fff,#c4b5fd 60%,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
 /* glass controls */
 .btn,.tg button,.glass{background:var(--glass);color:var(--ui);border:1px solid var(--line);border-radius:12px;padding:8px 14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;
   backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);box-shadow:var(--gshadow);transition:background .2s,border-color .2s,transform .12s,color .2s}
 .btn:hover,.tg button:hover,.glass:hover{background:var(--glass-h);border-color:rgba(255,255,255,.28);color:#fff}
 .btn:active,.tg button:active{transform:translateY(1px)}
 .btn:focus-visible,.tg button:focus-visible,.glass:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-#mic{background:linear-gradient(180deg,rgba(255,206,92,.95),rgba(255,176,32,.85));color:#1a1300;border-color:rgba(255,230,160,.7);font-weight:700;padding:8px 18px}
+#mic{background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 50%,#22d3ee 100%);color:#fff;border-color:rgba(200,190,255,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 20px rgba(139,92,246,.45);font-weight:700;padding:8px 18px}
 #mic.on{background:linear-gradient(180deg,rgba(255,110,110,.95),rgba(230,50,50,.85));border-color:rgba(255,190,190,.6);color:#fff}
 #mic .dot{width:10px;height:10px;border-radius:50%;background:currentColor}
 #mic.on .dot{animation:pulse 1s infinite}
@@ -42,12 +51,12 @@ button,select,input,textarea{font:inherit}
 .tg button:first-child{border-start-start-radius:12px;border-end-start-radius:12px}
 .tg button:last-child{border-start-end-radius:12px;border-end-end-radius:12px}
 .tg button+button{border-inline-start:0}
-.tg button.act{background:linear-gradient(180deg,rgba(255,206,92,.9),rgba(255,176,32,.75));color:#1a1300;font-weight:700}
+.tg button.act{background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 50%,#22d3ee 100%);color:#fff;font-weight:700}
 #ctrls{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;direction:var(--uidir,ltr)}
 #side{justify-self:end;display:flex;align-items:center;gap:10px;min-width:0}
-#status{position:absolute;inset-inline-end:16px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--mut);background:rgba(18,21,29,.9);padding-inline-start:12px}
-#me{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;border:2px solid rgba(255,255,255,.35);box-shadow:0 4px 14px rgba(0,0,0,.35)}
-#heard{position:fixed;inset:auto 0 0 0;z-index:5;padding:8px 16px;font-size:15px;color:var(--mut);background:rgba(18,21,29,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#status{position:absolute;inset-inline-end:16px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--mut);background:rgba(12,15,34,.9);padding-inline-start:12px}
+#me{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:none;padding:2px;background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 50%,#22d3ee 100%);box-shadow:0 4px 18px rgba(139,92,246,.45)}
+#heard{position:fixed;inset:auto 0 0 0;z-index:5;padding:8px 16px;font-size:15px;color:var(--mut);background:rgba(12,15,34,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lvl{display:inline-block;width:70px;height:8px;border-radius:4px;background:#2a2f3b;overflow:hidden;vertical-align:middle;margin-inline-end:8px}#lvl i{display:block;height:100%;width:0;background:#3ddc84;transition:width .08s}
 #heard b{color:var(--ui);font-weight:600}
 /* language picker */
@@ -55,7 +64,7 @@ button,select,input,textarea{font:inherit}
 #langBtn{max-width:230px}
 #langBtn .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #langPop{position:fixed;z-index:30;width:min(340px,calc(100vw - 24px));max-height:min(460px,70vh);display:flex;flex-direction:column;
-  background:rgba(22,25,34,.92);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
+  background:rgba(18,20,42,.92);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
 .sbox{display:flex;align-items:center;gap:8px;margin:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--line)}
 .sbox svg{width:16px;height:16px;flex:none;opacity:.7}
 #langQ{flex:1;background:none;border:0;outline:none;color:#fff;min-width:0}
@@ -79,27 +88,37 @@ button,select,input,textarea{font:inherit}
 #guide::after{left:4px;border-left-color:var(--accent)}
 /* panels */
 .sheet{position:fixed;z-index:10;top:64px;inset-inline-end:16px;width:min(450px,calc(100vw - 32px));max-height:calc(100vh - 84px);overflow:auto;
-  background:rgba(22,25,34,.9);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--line);border-radius:16px;padding:18px;color:var(--ui);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+  background:rgba(18,20,42,.9);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--line);border-radius:16px;padding:18px;color:var(--ui);box-shadow:0 24px 60px rgba(0,0,0,.5)}
 .sheet h2{margin:0 0 12px;font-size:16px;color:#fff}
 .sub{font-size:14px;margin:4px 0 8px;color:#fff}
 .row{display:grid;grid-template-columns:130px 1fr auto;gap:10px;align-items:center;margin-bottom:12px;font-size:14px}
 .row output{min-width:3ch;text-align:end;font-variant-numeric:tabular-nums;color:var(--mut)}
 .row input[type=color]{width:46px;height:30px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
 select{background:rgba(255,255,255,.07);color:var(--ui);border:1px solid var(--line);border-radius:10px;padding:7px}
-select option{background:#1b1f29}
+select option{background:#171b36}
+select{appearance:none;-webkit-appearance:none;padding-inline-end:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23a78bfa' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:12px 8px;background-position:right 10px center}
+[dir=rtl] select{background-position:left 10px center}
+select:focus,#src:focus,input:focus-visible{outline:none;border-color:#8b5cf6;box-shadow:0 0 0 3px rgba(139,92,246,.3)}
+input[type=range]{height:6px}
 .themes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 16px}
 .th{border:2px solid var(--line);border-radius:12px;padding:10px 4px;cursor:pointer;font-size:12px;text-align:center;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
 .th.act{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 #editor{position:fixed;inset:0;z-index:20;background:rgba(5,6,10,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px}
-#editor .box{width:min(980px,100%);height:min(88vh,920px);display:flex;flex-direction:column;gap:12px;background:rgba(22,25,34,.92);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+#editor .box{width:min(980px,100%);height:min(88vh,920px);display:flex;flex-direction:column;gap:12px;background:rgba(18,20,42,.92);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
 #editor h2{margin:0;color:#fff;font-size:18px}
 #editor p.hint{margin:0;color:var(--mut);font-size:13px}
-#drop{border:1.5px dashed rgba(255,255,255,.22);border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--mut);font-size:13px}
-#drop.over{border-color:var(--accent);background:rgba(255,194,61,.07)}
+#drop{border:1.5px dashed rgba(167,139,250,.45);border-radius:16px;padding:22px 16px;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;text-align:center;color:var(--mut);font-size:13px;cursor:pointer;background:rgba(139,92,246,.06);transition:background .25s,border-color .25s,transform .25s}
+#drop:hover,#drop.over,#drop:focus-visible{border-color:#22d3ee;background:rgba(34,211,238,.07);outline:none}
+#drop.over{transform:scale(1.01)}
+.fold{width:86px;height:70px;overflow:visible}
+.fold .doc{transition:transform .45s cubic-bezier(.2,.9,.3,1.3)}
+#drop:hover .fold .doc,#drop.over .fold .doc,#drop:focus-visible .fold .doc{transform:translateY(-14px) rotate(-6deg)}
+#dropTitle{color:#fff;font-weight:700;font-size:15px}
+
 #fileMsg{color:var(--ui)}
 #src{flex:1;resize:none;background:rgba(0,0,0,.25);color:#eee;border:1px solid var(--line);border-radius:12px;padding:16px;font-family:'Cairo','Inter',sans-serif;font-size:20px;line-height:1.8;text-align:start}
 .acts{display:flex;gap:10px;flex-wrap:wrap}
-.primary{background:linear-gradient(180deg,rgba(255,206,92,.95),rgba(255,176,32,.85))!important;color:#1a1300!important;border-color:rgba(255,230,160,.7)!important;font-weight:700}
+.primary{background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 50%,#22d3ee 100%)!important;color:#fff!important;border-color:rgba(200,190,255,.55)!important;font-weight:700}
 kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:12px}
 @media (prefers-reduced-motion:reduce){.w{transition:none}}
 @media (max-width:760px){.brand span{display:none}#bar{grid-template-columns:auto 1fr auto}}
@@ -108,7 +127,7 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
 <body>
 <div id="bar">
   <div class="brand" title="Online Teleprompter">
-    <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="36" rx="7" fill="#ffc23d"/><rect x="14" y="17" width="36" height="4" rx="2" fill="#1a1300"/><rect x="14" y="25" width="28" height="4" rx="2" fill="#1a1300" opacity=".55"/><rect x="14" y="33" width="32" height="4" rx="2" fill="#1a1300" opacity=".3"/><rect x="29" y="44" width="6" height="8" fill="#ffc23d"/><rect x="20" y="52" width="24" height="5" rx="2.5" fill="#ffc23d"/></svg>
+    <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".5" stop-color="#6366f1"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><rect x="6" y="8" width="52" height="36" rx="8" fill="url(#lg)"/><rect x="14" y="17" width="36" height="4" rx="2" fill="#fff"/><rect x="14" y="25" width="28" height="4" rx="2" fill="#fff" opacity=".6"/><rect x="14" y="33" width="32" height="4" rx="2" fill="#ff8a3d"/><rect x="29" y="44" width="6" height="8" fill="#6366f1"/><rect x="20" y="52" width="24" height="5" rx="2.5" fill="url(#lg)"/></svg>
     <span>Online Teleprompter</span>
   </div>
   <div id="ctrls">
@@ -168,10 +187,15 @@ kbd{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:
   <div class="box">
     <h2 data-t="scriptTitle"></h2>
     <p class="hint" data-t="scriptHint"></p>
-    <div id="drop">
-      <button class="btn" id="fileBtn"><span>⬆</span><span data-t="upload"></span></button>
-      <input type="file" id="fileIn" hidden accept=".txt,.md,.text,.srt,.vtt,.docx,.pptx,.pdf,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+    <div id="drop" role="button" tabindex="0">
+      <svg class="fold" viewBox="0 0 86 70" aria-hidden="true"><defs><linearGradient id="fg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#6366f1"/></linearGradient><linearGradient id="fg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+        <path d="M6 16a6 6 0 0 1 6-6h18l7 7h37a6 6 0 0 1 6 6v35a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="url(#fg1)" opacity=".55"/>
+        <g class="doc"><rect x="26" y="4" width="34" height="42" rx="5" fill="#f1f3ff"/><path d="M51 4v8a3 3 0 0 0 3 3h6" fill="#c4b5fd"/><rect x="32" y="20" width="22" height="3" rx="1.5" fill="#8b5cf6"/><rect x="32" y="27" width="18" height="3" rx="1.5" fill="#22d3ee"/><rect x="32" y="34" width="20" height="3" rx="1.5" fill="#ff8a3d"/></g>
+        <path d="M2 30a6 6 0 0 1 6-6h70a6 6 0 0 1 6 6.6l-3 28A6 6 0 0 1 75 64H11a6 6 0 0 1-6-5.4z" fill="url(#fg2)"/>
+      </svg>
+      <span id="dropTitle" data-t="dropTitle"></span>
       <span id="fileMsg" data-t="dropHint"></span>
+      <input type="file" id="fileIn" hidden accept=".txt,.md,.text,.srt,.vtt,.docx,.pptx,.pdf,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation">
     </div>
     <textarea id="src" spellcheck="false" dir="auto"></textarea>
     <div class="acts">
@@ -195,7 +219,7 @@ const T={
   strict:'Strict (fewer mistakes)',normal:'Normal',loose:'Flexible (if it lags behind)',micUsed:'Microphone in use',defaults:'Reset to defaults',done:'Done',
   shortcuts:'Shortcuts: <kbd>Space</kbd> start/stop · <kbd>↓</kbd> <kbd>↑</kbd> next/previous word · <kbd>PgDn</kbd> next line · click any word to continue from it.',
   scriptTitle:'Your script',scriptHint:'Paste your script, or upload a file. “Arrange sentences” puts every complete sentence on its own line without changing a single word.',
-  upload:'Upload file',dropHint:'TXT, Word (.docx), PowerPoint (.pptx), PDF or subtitles (.srt) — or drop a file here',use:'Show in teleprompter',format:'Arrange sentences (one per line)',cancel:'Cancel',
+  dropTitle:'Upload file or drag and drop',dropHint:'TXT · Word (.docx) · PowerPoint (.pptx) · PDF · Subtitles (.srt)',use:'Show in teleprompter',format:'Arrange sentences (one per line)',cancel:'Cancel',
   ready:'Ready',wordOf:(a,b)=>`Word ${a} of ${b}`,finished:'Script finished 👏 — microphone off',finishedStart:'The script is finished. Press “Restart” or click a word to start from.',
   noSR:'This browser has no speech recognition. Open it in Google Chrome or Microsoft Edge.',askMic:'Asking for microphone permission…',
   micDenied:'Microphone is blocked. Click the microphone icon next to the address bar, choose Allow, then press Start again.',
@@ -203,7 +227,7 @@ const T={
   listening:'Listening… start reading',defMic:'Default microphone',reading:n=>`Reading ${n}…`,loaded:(n,w)=>`Loaded “${n}” — ${w} words`,
   fileErr:n=>`Couldn’t read “${n}”. Try saving it as .docx, .pdf or .txt.`,docOld:'Old .doc files aren’t supported. Save it as .docx and upload again.',
   fmtSafe:'Arranged. No words were changed.',fmtSkip:'Nothing to arrange.',
-  th:{night:'Night',black:'High contrast',studio:'Studio classic',navy:'Midnight blue',forest:'Forest',plum:'Plum',sepia:'Warm brown',paper:'Paper',white:'White',sky:'Sky',mint:'Mint',kids:'Playful'}},
+  th:{amr:'Amr Mahmoud',amrNeon:'Amr · Neon',amrViolet:'Amr · Violet',amrSunset:'Amr · Sunset',amrCandy:'Amr · Candy',amrLight:'Amr · Light',night:'Night',black:'High contrast',studio:'Studio classic',navy:'Midnight blue',forest:'Forest',plum:'Plum',sepia:'Warm brown',paper:'Paper',white:'White',sky:'Sky',mint:'Mint',kids:'Playful'}},
  ar:{spaceKey:'مسافة (Space)',start:'ابدأ الاستماع',stop:'إيقاف',script:'السكريبت',restart:'من الأول',restartTip:'ارجع لأول السكريبت',settings:'الإعدادات',speechLang:'لغة الكلام',
   alignRight:'محاذاة يمين',alignCenter:'توسيط',alignLeft:'محاذاة شمال',justify:'ضبط الطرفين',flipH:'عكس أفقي (مراية)',flipV:'عكس رأسي',fullscreen:'ملء الشاشة',
   searchLang:'ابحث عن لغة…',noLang:'مفيش لغة بالاسم ده',hearing:'بسمعك:',uiLang:'لغة الموقع',auto:'تلقائي',themes:'ثيمات جاهزة',font:'نوع الخط',systemFont:'خط النظام',
@@ -211,7 +235,7 @@ const T={
   strict:'صارمة (أقل غلط)',normal:'عادية',loose:'مرنة (لو بيتأخر عنك)',micUsed:'المايك المستخدم',defaults:'رجّع الافتراضي',done:'تمام',
   shortcuts:'اختصارات: <kbd>Space</kbd> تشغيل/إيقاف · <kbd>↓</kbd> <kbd>↑</kbd> كلمة لقدام/لورا · <kbd>PgDn</kbd> سطر لقدام · اضغط على أي كلمة عشان تبدأ منها.',
   scriptTitle:'السكريبت',scriptHint:'الصق السكريبت أو ارفع ملف. «رتّب الجمل» بيحط كل جملة كاملة في سطر لوحدها من غير ما يغيّر ولا كلمة.',
-  upload:'ارفع ملف',dropHint:'TXT أو Word (.docx) أو PowerPoint (.pptx) أو PDF أو ترجمة (.srt) — أو اسحب الملف هنا',use:'اعرض في الملقّن',format:'رتّب الجمل (سطر لكل جملة)',cancel:'إلغاء',
+  dropTitle:'ارفع ملف أو اسحبه وأفلته هنا',dropHint:'TXT · Word (.docx) · PowerPoint (.pptx) · PDF · ترجمة (.srt)',use:'اعرض في الملقّن',format:'رتّب الجمل (سطر لكل جملة)',cancel:'إلغاء',
   ready:'جاهز',wordOf:(a,b)=>`كلمة ${a} من ${b}`,finished:'خلص السكريبت 👏 — المايك اتقفل',finishedStart:'السكريبت خلص. اضغط «من الأول» أو اضغط على كلمة تبدأ منها.',
   noSR:'المتصفح ده مش بيدعم التعرّف على الصوت. افتحه في Google Chrome أو Edge.',askMic:'بطلب إذن المايك…',
   micDenied:'المايك مش متاح. اضغط على علامة المايك جنب العنوان واختار Allow، وبعدين اضغط ابدأ تاني.',
@@ -219,7 +243,7 @@ const T={
   listening:'بسمعك… ابدأ اقرا',defMic:'المايك الافتراضي',reading:n=>`بقرا ${n}…`,loaded:(n,w)=>`اتحمّل «${n}» — ${w} كلمة`,
   fileErr:n=>`مقدرتش أقرا «${n}». جرّب تحفظه docx أو pdf أو txt.`,docOld:'ملفات .doc القديمة مش مدعومة. احفظه .docx وارفعه تاني.',
   fmtSafe:'اترتب. ولا كلمة اتغيرت.',fmtSkip:'مفيش حاجة تترتب.',
-  th:{night:'ليلي',black:'أسود عالي التباين',studio:'تيليبرومتر كلاسيك',navy:'أزرق ليلي',forest:'أخضر مريح',plum:'بنفسجي',sepia:'بني دافي',paper:'ورق فاتح',white:'أبيض',sky:'سماوي فاتح',mint:'نعناعي فاتح',kids:'ألوان مرحة'}}
+  th:{amr:'عمرو محمود',amrNeon:'عمرو · نيون',amrViolet:'عمرو · بنفسجي',amrSunset:'عمرو · غروب',amrCandy:'عمرو · كاندي',amrLight:'عمرو · فاتح',night:'ليلي',black:'أسود عالي التباين',studio:'تيليبرومتر كلاسيك',navy:'أزرق ليلي',forest:'أخضر مريح',plum:'بنفسجي',sepia:'بني دافي',paper:'ورق فاتح',white:'أبيض',sky:'سماوي فاتح',mint:'نعناعي فاتح',kids:'ألوان مرحة'}}
 };
 let UI='en';
 function t(k,...a){const v=(T[UI]&&T[UI][k])??T.en[k];return typeof v==='function'?v(...a):v}
@@ -494,7 +518,7 @@ async function importFile(f){
     $('src').value=txt;$('fileMsg').textContent=t('loaded',f.name,wordsOf(txt).length);
   }catch(e){$('fileMsg').textContent=e.message==='doc'?t('docOld'):t('fileErr',f.name)}
 }
-$('fileBtn').onclick=()=>$('fileIn').click();
+$('drop').onclick=e=>{if(e.target.id!=='fileIn')$('fileIn').click()};$('drop').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('fileIn').click()}};
 $('fileIn').onchange=e=>{importFile(e.target.files[0]);e.target.value=''};
 const drop=$('drop');
 ['dragenter','dragover'].forEach(ev=>$('editor').addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
@@ -542,12 +566,13 @@ $('langQ').onkeydown=e=>{const items=[...$('langList').querySelectorAll('li[role
 document.addEventListener('click',e=>{if(!$('langPop').hidden&&!$('langPop').contains(e.target))closeLang()});
 
 /* ---------- settings ---------- */
-const DEF={font:"'Cairo',sans-serif",size:56,lh:1.7,width:900,fg:'#f4f1e8',bg:'#0d0f14',cur:'#ffc23d',said:'#5f6675',pos:45,lang:'en-US',sens:'normal',align:'left',fx:false,fy:false,theme:'night',ui:'auto'};
-const THEMES={night:['#0d0f14','#f4f1e8','#ffc23d','#5f6675'],black:['#000000','#ffffff','#ffe14d','#4d4d4d'],studio:['#050505','#f2f2f2','#2fd3ff','#555a60'],navy:['#0b1730','#e8eefc','#7cc4ff','#4a5a7a'],forest:['#0f1f17','#e6f2ea','#7ee2a8','#4f6b5b'],plum:['#1b1028','#f1e9fb','#ff9ad5','#6c5a80'],sepia:['#2a1f16','#f6e7d2','#ffb35c','#7a6551'],paper:['#f7f2e7','#1f1b14','#c2410c','#b3aa98'],white:['#ffffff','#111418','#1565ff','#a7adb7'],sky:['#e9f4ff','#0d2236','#e85d04','#9db3c8'],mint:['#ecf8f1','#123222','#0f8a5f','#9ab8a7'],kids:['#fff6d6','#2b2440','#ff4f8b','#b9ae8c']};
+const DEF={font:"'Cairo',sans-serif",size:56,lh:1.7,width:900,fg:'#f1f3ff',bg:'#0a0e1f',cur:'#ff9a3d',said:'#4b5275',pos:45,lang:'en-US',sens:'normal',align:'left',fx:false,fy:false,theme:'amr',ui:'auto',brand2:true};
+const THEMES={amr:['#0a0e1f','#f1f3ff','#ff9a3d','#4b5275'],amrNeon:['#070a18','#eaf6ff','#22d3ee','#3d4a6b'],amrViolet:['#140c2e','#f3eeff','#c084fc','#5b4b86'],amrSunset:['#1a0f24','#fff1e6','#ff8a3d','#6e5470'],amrCandy:['#1b0b26','#ffeefa','#ec4899','#6d4a6a'],amrLight:['#f4f1ff','#1b1440','#7c3aed','#a9a3c9'],night:['#0d0f14','#f4f1e8','#ffc23d','#5f6675'],black:['#000000','#ffffff','#ffe14d','#4d4d4d'],studio:['#050505','#f2f2f2','#2fd3ff','#555a60'],navy:['#0b1730','#e8eefc','#7cc4ff','#4a5a7a'],forest:['#0f1f17','#e6f2ea','#7ee2a8','#4f6b5b'],plum:['#1b1028','#f1e9fb','#ff9ad5','#6c5a80'],sepia:['#2a1f16','#f6e7d2','#ffb35c','#7a6551'],paper:['#f7f2e7','#1f1b14','#c2410c','#b3aa98'],white:['#ffffff','#111418','#1565ff','#a7adb7'],sky:['#e9f4ff','#0d2236','#e85d04','#9db3c8'],mint:['#ecf8f1','#123222','#0f8a5f','#9ab8a7'],kids:['#fff6d6','#2b2440','#ff4f8b','#b9ae8c']};
 const saved=store.get('settings',null);
 let S=Object.assign({},DEF,saved||{});
 if(!saved){const ar=/(^|,)ar/.test((navigator.languages||[navigator.language||'']).join(',').toLowerCase());if(ar){S.lang='ar-EG';S.align='right'}}
 if(!LANGS.some(l=>l[0]===S.lang))S.lang=DEF.lang;
+if(saved&&!saved.brand2){S.brand2=true;if(!saved.theme||saved.theme==='night'){Object.assign(S,{theme:'amr',bg:'#0a0e1f',fg:'#f1f3ff',cur:'#ff9a3d',said:'#4b5275'})}}
 function applySettings(){
   const r=document.documentElement.style;
   r.setProperty('--font',S.font);r.setProperty('--size',S.size+'px');r.setProperty('--lh',S.lh);r.setProperty('--width',S.width+'px');
