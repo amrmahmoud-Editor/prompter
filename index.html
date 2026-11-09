@@ -579,7 +579,7 @@ let S=Object.assign({},DEF,saved||{});
 
 if(!LANGS.some(l=>l[0]===S.lang))S.lang=DEF.lang;
 if(saved&&!saved.brand4){S.brand4=true;Object.assign(S,{theme:'amrBeige',bg:'#f6efe1',fg:'#2b2116',cur:'#b8760a',said:'#b9ad96',ui:'en',fontAr:'Alexandria',fontEn:'Inter'})}
-if(!S.dirfix){S.dirfix=true;S.align='auto'}
+if(saved&&!saved.dirfix){S.dirfix=true;S.align='auto'}
 if(!S.fontAr)S.fontAr='Alexandria';if(!S.fontEn)S.fontEn='Inter';
 function applySettings(){
   const r=document.documentElement.style;
