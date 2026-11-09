@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ملقّن عمرو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Tajawal:wght@400;700;800&family=Noto+Naskh+Arabic:wght@400;700&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#0d0f14; --fg:#f4f1e8; --said:#5f6675; --cur:#ffc23d; --curbg:rgba(255,194,61,.16);
+  --panel:#171a22; --line:#2a2f3b; --ui:#c9cdd8; --accent:#ffc23d; --rec:#ff4d4d;
+  --font:'Cairo',sans-serif; --size:56px; --lh:1.7; --width:900px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:'IBM Plex Sans Arabic','Cairo',system-ui,sans-serif;overflow:hidden}
+button,select,input,textarea{font:inherit}
+/* top bar */
+#bar{position:fixed;inset:0 0 auto 0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  padding:10px 16px;background:linear-gradient(var(--panel),color-mix(in srgb,var(--panel) 80%,transparent));border-bottom:1px solid var(--line)}
+#bar h1{margin:0 0 0 8px;font-size:17px;font-weight:700;color:var(--accent)}
+.btn{background:#232836;color:var(--ui);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.btn:hover{border-color:var(--accent);color:#fff}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#mic{background:var(--accent);color:#1a1300;border-color:var(--accent);font-weight:700;padding:8px 20px}
+#mic.on{background:var(--rec);border-color:var(--rec);color:#fff}
+#mic .dot{width:10px;height:10px;border-radius:50%;background:currentColor}
+#mic.on .dot{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+#status{font-size:13px;color:#8b92a3;margin-inline-start:auto;max-width:42ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#heard{position:fixed;inset:auto 0 0 0;z-index:5;padding:8px 16px;font-size:15px;color:#8b92a3;background:color-mix(in srgb,var(--panel) 90%,transparent);border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lvl{display:inline-block;width:70px;height:8px;border-radius:4px;background:#2a2f3b;overflow:hidden;vertical-align:middle;margin-inline-end:8px}#lvl i{display:block;height:100%;width:0;background:#3ddc84;transition:width .08s}
+#heard b{color:var(--ui);font-weight:600}
+/* stage */
+#stage{position:absolute;inset:0;overflow-y:auto;scroll-behavior:auto;scrollbar-width:thin}
+#stage{transform:scale(var(--fx,1),var(--fy,1))}
+.tg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.tg button{background:#232836;color:var(--ui);border:0;padding:8px 11px;cursor:pointer;min-width:38px;font-size:15px}.tg button+button{border-inline-start:1px solid var(--line)}.tg button.act{background:var(--accent);color:#1a1300;font-weight:700}.tg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+#langSel{max-width:190px;padding:8px}
+.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0 16px}.th{border:2px solid var(--line);border-radius:10px;padding:10px 4px;cursor:pointer;font-size:12px;text-align:center;font-weight:700}.th.act{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+
+#script{max-width:var(--width);margin:0 auto;padding:50vh 24px 60vh;font-family:var(--font);font-size:var(--size);line-height:var(--lh);
+  direction:var(--dir,rtl);text-align:var(--align,right);font-weight:600}
+#script p{margin:0 0 .45em}
+.w{border-radius:.18em;padding:0 .06em;cursor:pointer;transition:color .2s,background .2s}
+.w.said{color:var(--said)}
+.w.cur{color:var(--cur);background:var(--curbg);box-shadow:0 .08em 0 var(--cur)}
+#guide{position:fixed;inset-inline:0;top:50%;height:0;border-top:2px dashed color-mix(in srgb,var(--accent) 35%,transparent);pointer-events:none;z-index:2}
+#guide::before,#guide::after{content:"";position:absolute;top:-9px;border:8px solid transparent}
+#guide::before{right:4px;border-right-color:var(--accent)}
+#guide::after{left:4px;border-left-color:var(--accent)}
+/* panels */
+.sheet{position:fixed;z-index:10;inset:60px 16px auto auto;width:min(440px,calc(100vw - 32px));max-height:calc(100vh - 80px);overflow:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;color:var(--ui);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.sheet h2{margin:0 0 12px;font-size:16px;color:#fff}
+.row{display:grid;grid-template-columns:120px 1fr auto;gap:10px;align-items:center;margin-bottom:12px;font-size:14px}
+.row output{min-width:3ch;text-align:left;font-variant-numeric:tabular-nums;color:#8b92a3}
+.row input[type=color]{width:46px;height:30px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
+select{background:#232836;color:var(--ui);border:1px solid var(--line);border-radius:8px;padding:6px}
+#editor{position:fixed;inset:0;z-index:20;background:rgba(5,6,10,.82);display:grid;place-items:center;padding:16px}
+#editor .box{width:min(980px,100%);height:min(86vh,900px);display:flex;flex-direction:column;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+#editor h2{margin:0;color:#fff;font-size:18px}
+#editor p.hint{margin:0;color:#8b92a3;font-size:13px}
+#src{flex:1;resize:none;background:#0f1218;color:#eee;border:1px solid var(--line);border-radius:12px;padding:16px;font-family:'Cairo',sans-serif;font-size:20px;line-height:1.8;text-align:start}
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+.primary{background:var(--accent);color:#1a1300;border-color:var(--accent);font-weight:700}
+kbd{background:#232836;border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:12px}
+@media (prefers-reduced-motion:reduce){.w{transition:none}}
+</style>
+</head>
+<body>
+<div id="bar">
+  <h1>ملقّن عمرو</h1>
+  <button class="btn" id="mic" title="مسافة (Space)"><span class="dot"></span><span id="micTxt">ابدأ الاستماع</span></button>
+  <button class="btn" id="editBtn">✎ السكريبت</button>
+  <button class="btn" id="resetBtn" title="ارجع لأول السكريبت">⟲ من الأول</button>
+  <button class="btn" id="setBtn">⚙ الإعدادات</button>
+  <select id="langSel" title="لغة الكلام"><option value="ar-EG">العربية (مصر)</option><option value="ar-SA">العربية (السعودية / فصحى)</option><option value="ar-AE">العربية (الإمارات)</option><option value="ar-KW">العربية (الكويت)</option><option value="ar-QA">العربية (قطر)</option><option value="ar-BH">العربية (البحرين)</option><option value="ar-OM">العربية (عُمان)</option><option value="ar-JO">العربية (الأردن)</option><option value="ar-LB">العربية (لبنان)</option><option value="ar-IQ">العربية (العراق)</option><option value="ar-SY">العربية (سوريا)</option><option value="ar-PS">العربية (فلسطين)</option><option value="ar-SD">العربية (السودان)</option><option value="ar-LY">العربية (ليبيا)</option><option value="ar-TN">العربية (تونس)</option><option value="ar-DZ">العربية (الجزائر)</option><option value="ar-MA">العربية (المغرب)</option><option value="ar-YE">العربية (اليمن)</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="en-AU">English (Australia)</option><option value="en-CA">English (Canada)</option><option value="en-IN">English (India)</option><option value="en-NZ">English (New Zealand)</option><option value="en-ZA">English (South Africa)</option><option value="en-IE">English (Ireland)</option><option value="en-PH">English (Philippines)</option><option value="en-NG">English (Nigeria)</option><option value="en-KE">English (Kenya)</option><option value="fr-FR">Français (France)</option><option value="fr-CA">Français (Canada)</option><option value="es-ES">Español (España)</option><option value="es-MX">Español (México)</option><option value="es-US">Español (EE. UU.)</option><option value="es-AR">Español (Argentina)</option><option value="es-CO">Español (Colombia)</option><option value="pt-BR">Português (Brasil)</option><option value="pt-PT">Português (Portugal)</option><option value="de-DE">Deutsch</option><option value="it-IT">Italiano</option><option value="nl-NL">Nederlands</option><option value="sv-SE">Svenska</option><option value="da-DK">Dansk</option><option value="nb-NO">Norsk bokmål</option><option value="fi-FI">Suomi</option><option value="is-IS">Íslenska</option><option value="pl-PL">Polski</option><option value="cs-CZ">Čeština</option><option value="sk-SK">Slovenčina</option><option value="hu-HU">Magyar</option><option value="ro-RO">Română</option><option value="bg-BG">Български</option><option value="el-GR">Ελληνικά</option><option value="hr-HR">Hrvatski</option><option value="sr-RS">Српски</option><option value="sl-SI">Slovenščina</option><option value="uk-UA">Українська</option><option value="ru-RU">Русский</option><option value="lt-LT">Lietuvių</option><option value="lv-LV">Latviešu</option><option value="et-EE">Eesti</option><option value="ca-ES">Català</option><option value="eu-ES">Euskara</option><option value="gl-ES">Galego</option><option value="tr-TR">Türkçe</option><option value="az-AZ">Azərbaycan</option><option value="ka-GE">ქართული</option><option value="hy-AM">Հայերեն</option><option value="he-IL">עברית</option><option value="fa-IR">فارسی</option><option value="ur-PK">اردو (پاکستان)</option><option value="ur-IN">اردو (بھارت)</option><option value="hi-IN">हिन्दी</option><option value="bn-BD">বাংলা (বাংলাদেশ)</option><option value="bn-IN">বাংলা (ভারত)</option><option value="ta-IN">தமிழ்</option><option value="te-IN">తెలుగు</option><option value="mr-IN">मराठी</option><option value="gu-IN">ગુજરાતી</option><option value="kn-IN">ಕನ್ನಡ</option><option value="ml-IN">മലയാളം</option><option value="pa-Guru-IN">ਪੰਜਾਬੀ</option><option value="ne-NP">नेपाली</option><option value="si-LK">සිංහල</option><option value="zh-CN">中文 (普通话, 中国)</option><option value="zh-TW">中文 (台灣)</option><option value="yue-Hant-HK">粵語 (香港)</option><option value="ja-JP">日本語</option><option value="ko-KR">한국어</option><option value="th-TH">ไทย</option><option value="vi-VN">Tiếng Việt</option><option value="id-ID">Bahasa Indonesia</option><option value="ms-MY">Bahasa Melayu</option><option value="fil-PH">Filipino</option><option value="jv-ID">Basa Jawa</option><option value="su-ID">Basa Sunda</option><option value="km-KH">ខ្មែរ</option><option value="lo-LA">ລາວ</option><option value="my-MM">မြန်မာ</option><option value="mn-MN">Монгол</option><option value="kk-KZ">Қазақ</option><option value="uz-UZ">Oʻzbek</option><option value="sw-KE">Kiswahili (Kenya)</option><option value="sw-TZ">Kiswahili (Tanzania)</option><option value="am-ET">አማርኛ</option><option value="zu-ZA">isiZulu</option><option value="af-ZA">Afrikaans</option><option value="so-SO">Soomaali</option><option value="ha-NG">Hausa</option><option value="yo-NG">Yorùbá</option></select>
+  <span class="tg" role="group" aria-label="المحاذاة"><button id="aR" title="محاذاة يمين">⇥</button><button id="aC" title="توسيط">≡</button><button id="aL" title="محاذاة شمال">⇤</button><button id="aJ" title="ضبط الطرفين">☰</button></span>
+  <span class="tg" role="group" aria-label="عكس الشاشة"><button id="fH" title="عكس أفقي (مراية)">⇆</button><button id="fV" title="عكس رأسي">⇅</button></span>
+  <button class="btn" id="fsBtn">⛶ ملء الشاشة</button>
+  <span id="status">جاهز</span>
+</div>
+
+<div id="stage"><div id="script"></div></div>
+<div id="guide"></div>
+<div id="heard"><span id="lvl"><i id="lvlBar"></i></span> بسمعك: <b id="heardTxt">—</b></div>
+
+<div class="sheet" id="settings" hidden>
+  <h2>الإعدادات</h2>
+  <div style="font-size:14px;margin-bottom:6px">ثيمات جاهزة</div>
+  <div class="themes" id="themes"></div>
+  <div class="row"><label for="sFont">نوع الخط</label>
+    <select id="sFont">
+      <option value="'Cairo',sans-serif">Cairo</option>
+      <option value="'Tajawal',sans-serif">Tajawal</option>
+      <option value="'IBM Plex Sans Arabic',sans-serif">IBM Plex Arabic</option>
+      <option value="'Noto Naskh Arabic',serif">Noto Naskh</option>
+      <option value="'Amiri',serif">Amiri</option>
+      <option value="system-ui,sans-serif">خط النظام</option>
+    </select><span></span></div>
+  <div class="row"><label for="sSize">حجم الخط</label><input type="range" id="sSize" min="24" max="140" step="2"><output id="oSize"></output></div>
+  <div class="row"><label for="sLh">المسافة بين السطور</label><input type="range" id="sLh" min="1.2" max="2.6" step="0.1"><output id="oLh"></output></div>
+  <div class="row"><label for="sWidth">عرض النص</label><input type="range" id="sWidth" min="400" max="1800" step="20"><output id="oWidth"></output></div>
+  <div class="row"><label for="sFg">لون النص</label><input type="color" id="sFg"><span></span></div>
+  <div class="row"><label for="sBg">لون الخلفية</label><input type="color" id="sBg"><span></span></div>
+  <div class="row"><label for="sCur">لون الكلمة الحالية</label><input type="color" id="sCur"><span></span></div>
+  <div class="row"><label for="sSaid">لون اللي اتقال</label><input type="color" id="sSaid"><span></span></div>
+  <div class="row"><label for="sPos">مكان السطر الحالي</label><input type="range" id="sPos" min="20" max="70" step="1"><output id="oPos"></output></div>
+  <div class="row"><label for="sSens">دقة المطابقة</label>
+    <select id="sSens"><option value="strict">صارمة (أقل غلط)</option><option value="normal">عادية</option><option value="loose">مرنة (لو بيتأخر عنك)</option></select><span></span></div>
+  <div class="row"><label>المايك المستخدم</label><span id="micName" style="font-size:12px;color:#8b92a3">—</span><span></span></div>
+  <div class="acts"><button class="btn" id="defBtn">رجّع الافتراضي</button><button class="btn primary" id="closeSet">تمام</button></div>
+  <p style="font-size:12px;color:#8b92a3;margin:14px 0 0">اختصارات: <kbd>Space</kbd> تشغيل/إيقاف · <kbd>↓</kbd> <kbd>↑</kbd> كلمة لقدام/لورا · <kbd>PgDn</kbd> سطر لقدام · اضغط على أي كلمة عشان تبدأ منها.</p>
+</div>
+
+<div id="editor" hidden>
+  <div class="box">
+    <h2>السكريبت</h2>
+    <p class="hint">الصق السكريبت هنا. زرار «نظّم الجمل» بيفصل كل جملة كاملة في سطر لوحدها.</p>
+    <textarea id="src" spellcheck="false" dir="auto"></textarea>
+    <div class="acts">
+      <button class="btn primary" id="useBtn">اعرض في الملقّن</button>
+      <button class="btn" id="fmtBtn">✨ نظّم الجمل (سطر لكل جملة)</button>
+      <button class="btn" id="cancelEdit">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem('mlq_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('mlq_'+k,JSON.stringify(v))}catch(e){}}};
+
+const SAMPLE=`السلام عليكم، أنا عمرو محمود، وأهلاً بيكم في حلقة جديدة من تعلم المونتاج.
+النهارده هنتعلم إزاي نعمل ترجمة عربي أوتوماتيك لأي فيديو.
+الطريقة دي هتوفر عليك ساعات من الكتابة اليدوية.
+خلينا نبدأ على طول.`;
+
+/* ---------- Arabic normalization & matching ---------- */
+function norm(w){
+  return w.replace(/[ً-ٰٟـ]/g,'')     // tashkeel + tatweel
+    .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
+    .replace(/[^\p{L}\p{N}]/gu,'').toLowerCase();
+}
+function strip(w){ // drop common prefixes for loose match
+  return w.replace(/^(وال|بال|فال|كال|لل|ال|و|ف|ب)(?=..)/,'');
+}
+function lev(a,b){
+  if(a===b)return 0; const m=a.length,n=b.length; if(!m)return n; if(!n)return m;
+  let p=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){let c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}
+  return p[n];
+}
+function sim(a,b){
+  if(!a||!b)return 0; if(a===b)return 1;
+  const a2=strip(a),b2=strip(b); if(a2===b2)return .95;
+  const d=lev(a2,b2); return 1-d/Math.max(a2.length,b2.length);
+}
+
+/* ---------- state ---------- */
+let words=[];      // {el, n}
+let pos=0;         // index of next word to be said
+let committed=0;   // position after last final result
+
+function render(text){
+  const box=$('script'); box.innerHTML=''; words=[];
+  text.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+    const p=document.createElement('p');
+    line.split(/\s+/).forEach((tok,i)=>{
+      if(i)p.appendChild(document.createTextNode(' '));
+      const s=document.createElement('span'); s.className='w'; s.textContent=tok;
+      const n=norm(tok);
+      if(n){const idx=words.length; s.dataset.i=idx; words.push({el:s,n}); s.onclick=()=>jump(idx);}
+      p.appendChild(s);
+    });
+    box.appendChild(p);
+  });
+  pos=committed=0; paint(true);
+}
+function jump(i){pos=committed=Math.max(0,Math.min(words.length,i));paint(true)}
+
+let lastTop=null;
+function paint(force){
+  words.forEach((w,i)=>{w.el.classList.toggle('said',i<pos);w.el.classList.toggle('cur',i===pos)});
+  const target=words[Math.min(pos,words.length-1)];
+  if(!target)return;
+  const top=target.el.offsetTop;
+  if(force||top!==lastTop){lastTop=top;scrollTo(target.el)}
+  if(pos>=words.length&&listening)stop();
+  $('status').textContent=pos>=words.length?'خلص السكريبت 👏 — المايك اتقفل':`كلمة ${pos+1} من ${words.length}`;
+}
+let anim=null;
+function scrollTo(el){
+  const st=$('stage'); const frac=(S.pos||45)/100;
+  const goal=el.offsetTop+el.offsetHeight/2-st.clientHeight*frac;
+  cancelAnimationFrame(anim); const start=st.scrollTop,d=goal-start,t0=performance.now(),dur=matchMedia('(prefers-reduced-motion:reduce)').matches?0:450;
+  const step=t=>{const k=dur?Math.min(1,(t-t0)/dur):1;st.scrollTop=start+d*(1-Math.pow(1-k,3));if(k<1)anim=requestAnimationFrame(step)};
+  anim=requestAnimationFrame(step);
+}
+
+/* ---------- matching engine ----------
+   Rules: never moves backward on its own (repeating a sentence = stays put);
+   off-script talk is ignored; skipping ahead needs 2 consecutive matching words
+   (or a 3-word phrase for a big jump); short/common words need the next word to confirm. */
+const STOP=new Set(['في','من','علي','على','ان','انا','انت','ده','دي','و','يا','لا','ما','هو','هي','اللي','كده','بس','مش','عن','الي','او','هنا','كان','يعني','اه','طيب','لو','مع','ايه','دا','كل','هم','احنا','بقي','بقى','تمام']);
+const SENS={strict:0.82,normal:0.72,loose:0.62};
+function need(t){const b=SENS[S.sens]||0.72; return t.length<=2?1:(t.length<=4?Math.min(.95,b+.1):b)}
+function m(t,wi){return wi<words.length&&sim(t,words[wi].n)>=need(t)}
+function align(from,toks){
+  const t=toks.map(norm).filter(Boolean); let p=from,i=0;
+  while(i<t.length&&p<words.length){
+    // 1) the expected next word
+    if(m(t[i],p)){
+      const weak=STOP.has(words[p].n)||words[p].n.length<=2;
+      if(!weak||(i+1<t.length&&m(t[i+1],p+1))){p++;i++;continue}
+      if(i+1>=t.length)break;            // wait for the next word to confirm
+    }
+    // 2) small skip (a word or two missed by the recognizer): 2 consecutive matches
+    let ok=false;
+    for(let k=1;k<=4&&!ok;k++){
+      if(i+1<t.length&&m(t[i],p+k)&&m(t[i+1],p+k+1)&&!(STOP.has(t[i])&&STOP.has(t[i+1]))){p=p+k+2;i+=2;ok=true}
+    }
+    // 3) big jump forward (you skipped a part of the script): 3-word phrase
+    if(!ok&&i+2<t.length){
+      for(let q=p+5;q<Math.min(words.length-2,p+120)&&!ok;q++){
+        if(m(t[i],q)&&m(t[i+1],q+1)&&m(t[i+2],q+2)){
+          const strong=[t[i],t[i+1],t[i+2]].filter(x=>!STOP.has(x)&&x.length>2).length;
+          // if the same phrase was already said behind us, this is a repeat, not a jump
+          let seen=false;for(let r=Math.max(0,p-80);r<p&&!seen;r++)if(m(t[i],r)&&m(t[i+1],r+1)&&m(t[i+2],r+2))seen=true;
+          if(seen){i+=3;ok=true;break}
+          if(strong>=2){p=q+3;i+=3;ok=true}
+        }
+      }
+    }
+    if(!ok)i++;                          // off-script / repeated word: ignore it, stay put
+  }
+  return p;
+}
+function advance(from,toks){return align(from,toks)}
+
+/* ---------- speech ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let denied=0,rec=null,listening=false,lastHeard=0,lastVoice=0,dog=0,gen=0;
+/* Chrome's free recognizer ends its session every so often (silence, ~1 min, network hiccup).
+   We open a fresh session instantly, keep what the last session heard, and a watchdog
+   restarts a session that went quiet while you are still talking. */
+function openSession(){
+  const my=++gen;
+  const r=new SR(); r.lang=S.lang; r.continuous=true; r.interimResults=true; r.maxAlternatives=3;
+  r.onresult=e=>{
+    if(my!==gen)return;
+    lastHeard=performance.now();denied=0;
+    let p=committed,allFinal=true,shown='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const x=e.results[i]; let best=p;
+      for(let a=0;a<x.length;a++){const q=align(p,x[a].transcript.trim().split(/\s+/));if(q>best)best=q}
+      p=best; shown+=x[0].transcript+' ';
+      if(x.isFinal&&allFinal)committed=p; else allFinal=false;
+    }
+    $('heardTxt').textContent=shown.trim()||'—';
+    if(p>pos){pos=p;paint()}else if(committed>pos){pos=committed;paint()}
+    // long sessions get slow: recycle right after a finished sentence
+    if(allFinal&&e.results.length>=6)recycle();
+    // long sessions get slow: recycle right after a finished sentence
+  };
+  r.onerror=e=>{
+    if(my!==gen)return;
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){denied=(denied||0)+1;if(mStream&&denied<4){return}$('status').textContent='Chrome رافض التعرّف على الصوت. اضغط على علامة المايك جنب العنوان واختار Allow.';stop()}
+    else if(e.error==='network'){$('status').textContent='النت فصل لحظة… برجع أسمع'}
+  };
+  r.onend=()=>{if(my!==gen||!listening)return; committed=pos; openSession()};
+  rec=r;
+  try{r.start();lastHeard=performance.now()}catch(err){setTimeout(()=>listening&&my===gen&&openSession(),150)}
+}
+function recycle(){committed=pos;const old=rec;gen++;try{old.onend=null;old.abort()}catch(_){}if(listening)openSession()}
+async function startRec(){
+  if(words.length&&pos>=words.length){$('status').textContent='السكريبت خلص. اضغط «من الأول» أو اضغط على كلمة تبدأ منها';return}
+  if(!SR){$('status').textContent='المتصفح ده مش بيدعم التعرّف على الصوت. افتح الملف في Google Chrome أو Edge.';return}
+  $('status').textContent='بطلب إذن المايك…';
+  const ok=await startMeter();
+  if(!ok){$('status').textContent='المايك مش متاح. اضغط على علامة المايك جنب العنوان واختار Allow، وبعدين اضغط ابدأ تاني.';return}
+  listening=true;setMic();openSession();
+  clearInterval(dog);
+  dog=setInterval(()=>{ // you are talking but nothing arrives for 2.5s -> fresh session
+    if(!listening)return;const now=performance.now();
+    if(now-lastVoice<800&&now-lastHeard>2500){lastHeard=now;recycle()}
+  },500);
+}
+function stop(){listening=false;clearInterval(dog);stopMeter();gen++;try{rec&&rec.abort()}catch(_){}committed=pos;setMic()}
+function setMic(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'إيقاف':'ابدأ الاستماع';if(listening)$('status').textContent='بسمعك… ابدأ اقرا'}
+$('mic').onclick=()=>listening?stop():startRec();
+
+/* mic level meter + which mic Chrome uses */
+let mStream=null,mCtx=null,mRaf=0;
+async function startMeter(){
+  if(mStream){try{mCtx&&mCtx.resume()}catch(e){}return true}
+  try{
+    mStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    $('micName').textContent=mStream.getAudioTracks()[0].label||'المايك الافتراضي';
+    mCtx=new AudioContext();const an=mCtx.createAnalyser();an.fftSize=512;mCtx.createMediaStreamSource(mStream).connect(an);
+    const d=new Uint8Array(an.fftSize);
+    const tick=()=>{an.getByteTimeDomainData(d);let x=0;for(const v of d)x=Math.max(x,Math.abs(v-128));
+      const pct=Math.min(100,x/1.1);if(pct>12)lastVoice=performance.now();$('lvlBar').style.width=pct+'%';$('lvlBar').style.background=pct>90?'#ff4d4d':pct<8?'#666':'#3ddc84';mRaf=requestAnimationFrame(tick)};tick();
+    return true;
+  }catch(e){return false}
+}
+function stopMeter(){cancelAnimationFrame(mRaf);try{mStream&&mStream.getTracks().forEach(t=>t.stop());mCtx&&mCtx.close()}catch(e){}mStream=mCtx=null;$('lvlBar').style.width='0'}
+
+/* ---------- formatter: one complete sentence per line ---------- */
+function formatScript(t){
+  t=t.replace(/\r/g,'').replace(/[ \t]+/g,' ');
+  // break after sentence-ending punctuation
+  t=t.replace(/([.!؟?…]+)\s*/g,'$1\n').replace(/([:؛])\s+/g,'$1\n');
+  let lines=t.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  const out=[];
+  const CONN=/\s(?=(?:بس|لكن|علشان|عشان|لأن|لان|وبعدين|وبعد كده|بعد كده|يعني|ولو|طيب|خلينا|دلوقتي|كمان|وكمان|وده|ودي|فـ?لما)\s)/;
+  for(let l of lines){
+    // split long lines at Arabic commas first
+    let parts=l.split(/(?<=[،,])\s+/);
+    let buf='';
+    for(const p of parts){
+      const cand=(buf?buf+' ':'')+p;
+      if(cand.split(' ').length>14&&buf){out.push(buf);buf=p}else buf=cand;
+    }
+    if(buf)out.push(buf);
+  }
+  // still-long lines without punctuation: split at connectors
+  const final=[];
+  for(const l of out){
+    if(l.split(' ').length<=18){final.push(l);continue}
+    let rest=l;
+    while(rest.split(' ').length>18){
+      const ws=rest.split(' ');let cut=-1;
+      for(let i=8;i<ws.length-3;i++){if(CONN.test(' '+ws[i]+' ')&&i<=20){cut=i}}
+      if(cut<0)cut=Math.min(14,ws.length-3);
+      final.push(ws.slice(0,cut).join(' '));rest=ws.slice(cut).join(' ');
+    }
+    final.push(rest);
+  }
+  return final.join('\n');
+}
+
+/* ---------- editor ---------- */
+function openEditor(){$('src').value=store.get('script',SAMPLE);$('editor').hidden=false;$('src').focus();if(listening)stop()}
+$('editBtn').onclick=openEditor;
+$('cancelEdit').onclick=()=>$('editor').hidden=true;
+$('fmtBtn').onclick=()=>{$('src').value=formatScript($('src').value)};
+$('useBtn').onclick=()=>{const t=$('src').value.trim();if(!t)return;store.set('script',t);render(t);$('editor').hidden=true};
+$('resetBtn').onclick=()=>jump(0);
+
+/* ---------- settings ---------- */
+const DEF={font:"'Cairo',sans-serif",size:56,lh:1.7,width:900,fg:'#f4f1e8',bg:'#0d0f14',cur:'#ffc23d',said:'#5f6675',pos:45,lang:'ar-EG',sens:'normal',align:'right',fx:false,fy:false,theme:'night'};
+const RTL=/^(ar|he|iw|fa|ur)(-|$)/;
+const THEMES={night:['ليلي','#0d0f14','#f4f1e8','#ffc23d','#5f6675'],black:['أسود عالي التباين','#000000','#ffffff','#ffe14d','#4d4d4d'],studio:['تيليبرومتر كلاسيك','#050505','#f2f2f2','#2fd3ff','#555a60'],navy:['أزرق ليلي','#0b1730','#e8eefc','#7cc4ff','#4a5a7a'],forest:['أخضر مريح','#0f1f17','#e6f2ea','#7ee2a8','#4f6b5b'],plum:['بنفسجي','#1b1028','#f1e9fb','#ff9ad5','#6c5a80'],paper:['ورق فاتح','#f7f2e7','#1f1b14','#c2410c','#b3aa98'],white:['أبيض','#ffffff','#111418','#1565ff','#a7adb7'],sky:['سماوي فاتح','#e9f4ff','#0d2236','#e85d04','#9db3c8'],mint:['نعناعي فاتح','#ecf8f1','#123222','#0f8a5f','#9ab8a7'],sepia:['بني دافي','#2a1f16','#f6e7d2','#ffb35c','#7a6551'],kids:['ألوان مرحة','#fff6d6','#2b2440','#ff4f8b','#b9ae8c']};
+let S=Object.assign({},DEF,store.get('settings',{}));
+function applySettings(){
+  const r=document.documentElement.style;
+  r.setProperty('--font',S.font);r.setProperty('--size',S.size+'px');r.setProperty('--lh',S.lh);r.setProperty('--width',S.width+'px');
+  r.setProperty('--fg',S.fg);r.setProperty('--bg',S.bg);r.setProperty('--cur',S.cur);r.setProperty('--said',S.said);
+  r.setProperty('--curbg',S.cur+'29');r.setProperty('--pos',S.pos);
+  $('guide').style.top=S.pos+'%';
+  r.setProperty('--dir',RTL.test(S.lang)?'rtl':'ltr');r.setProperty('--align',S.align);r.setProperty('--fx',S.fx?-1:1);r.setProperty('--fy',S.fy?-1:1);
+  $('guide').style.top=(S.fy?100-S.pos:S.pos)+'%';
+  $('langSel').value=S.lang;
+  [['aR','right'],['aC','center'],['aL','left'],['aJ','justify']].forEach(([id,v])=>$(id).classList.toggle('act',S.align===v));
+  $('fH').classList.toggle('act',S.fx);$('fV').classList.toggle('act',S.fy);
+  document.querySelectorAll('.th').forEach(b=>b.classList.toggle('act',b.dataset.k===S.theme));
+  $('sFont').value=S.font;$('sSize').value=S.size;$('sLh').value=S.lh;$('sWidth').value=S.width;$('sFg').value=S.fg;$('sBg').value=S.bg;
+  $('sCur').value=S.cur;$('sSaid').value=S.said;$('sPos').value=S.pos;$('sSens').value=S.sens;
+  $('oSize').textContent=S.size;$('oLh').textContent=S.lh;$('oWidth').textContent=S.width;$('oPos').textContent=S.pos+'%';
+  store.set('settings',S);
+}
+const map={sFont:'font',sSize:'size',sLh:'lh',sWidth:'width',sFg:'fg',sBg:'bg',sCur:'cur',sSaid:'said',sPos:'pos',sSens:'sens'};
+for(const id in map)$(id).addEventListener('input',e=>{const v=e.target.value;S[map[id]]=['size','width','pos'].includes(map[id])?+v:(map[id]==='lh'?+v:v);if(['fg','bg','cur','said'].includes(map[id]))S.theme='custom';applySettings();paint(true)});
+$('langSel').onchange=e=>{S.lang=e.target.value;S.align=RTL.test(S.lang)?'right':'left';applySettings();paint(true);if(listening){stop();startRec()}};
+[['aR','right'],['aC','center'],['aL','left'],['aJ','justify']].forEach(([id,v])=>$(id).onclick=()=>{S.align=v;applySettings();paint(true)});
+$('fH').onclick=()=>{S.fx=!S.fx;applySettings()};
+$('fV').onclick=()=>{S.fy=!S.fy;applySettings();paint(true)};
+for(const k in THEMES){const [n,bg,fg,cur]=THEMES[k];const b=document.createElement('button');b.className='th';b.dataset.k=k;b.textContent=n;b.style.background=bg;b.style.color=fg;b.style.borderBottom='4px solid '+cur;
+  b.onclick=()=>{const t=THEMES[k];S.theme=k;S.bg=t[1];S.fg=t[2];S.cur=t[3];S.said=t[4];applySettings();paint(true)};$('themes').appendChild(b)}
+$('setBtn').onclick=()=>$('settings').hidden=!$('settings').hidden;
+$('closeSet').onclick=()=>$('settings').hidden=true;
+$('defBtn').onclick=()=>{S=Object.assign({},DEF);applySettings();paint(true)};
+$('fsBtn').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+
+/* ---------- keys ---------- */
+document.addEventListener('keydown',e=>{
+  if(!$('editor').hidden||['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;
+  if(e.code==='Space'){e.preventDefault();listening?stop():startRec()}
+  else if(e.key==='ArrowDown'||e.key==='ArrowLeft'){e.preventDefault();jump(pos+1)}
+  else if(e.key==='ArrowUp'||e.key==='ArrowRight'){e.preventDefault();jump(pos-1)}
+  else if(e.key==='PageDown'){e.preventDefault();const p=words[pos]&&words[pos].el.parentElement.nextElementSibling;if(p&&p.firstChild)jump(+p.querySelector('.w').dataset.i)}
+  else if(e.key==='Escape'){$('settings').hidden=true}
+});
+
+applySettings();
+render(store.get('script',SAMPLE));
+if(!SR)$('status').textContent='افتح الملف في Google Chrome عشان المايك يشتغل';
+</script>
+</body>
+</html>
