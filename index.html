@@ -35,10 +35,10 @@ button,select,input,textarea{font:inherit}
 #heard b{color:var(--ui);font-weight:600}
 /* stage */
 #stage{position:absolute;inset:0;overflow-y:auto;scroll-behavior:auto;scrollbar-width:thin}
-#stage{transform:scale(var(--fx,1),var(--fy,1))}
-.tg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.tg button{background:#232836;color:var(--ui);border:0;padding:8px 11px;cursor:pointer;min-width:38px}.tg button+button{border-inline-start:1px solid var(--line)}.tg button.act{background:var(--accent);color:#1a1300;font-weight:700}.tg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+#stage.mirror #script{transform:scaleX(-1)}
+
 #script{max-width:var(--width);margin:0 auto;padding:50vh 24px 60vh;font-family:var(--font);font-size:var(--size);line-height:var(--lh);
-  direction:var(--dir,rtl);text-align:var(--align,right);font-weight:600}
+  direction:rtl;text-align:right;font-weight:600}
 #script p{margin:0 0 .45em}
 .w{border-radius:.18em;padding:0 .06em;cursor:pointer;transition:color .2s,background .2s}
 .w.said{color:var(--said)}
@@ -73,9 +73,6 @@ kbd{background:#232836;border:1px solid var(--line);border-radius:5px;padding:0 
   <button class="btn" id="editBtn">✎ السكريبت</button>
   <button class="btn" id="resetBtn" title="ارجع لأول السكريبت">⟲ من الأول</button>
   <button class="btn" id="setBtn">⚙ الإعدادات</button>
-  <span class="tg" role="group" aria-label="محاذاة"><button id="aR" title="محاذاة يمين">⇥</button><button id="aC" title="توسيط">≡</button><button id="aL" title="محاذاة شمال">⇤</button><button id="aJ" title="ضبط الطرفين">☰</button></span>
-  <span class="tg" role="group" aria-label="اتجاه"><button id="dR" title="عربي: يمين لشمال">ع</button><button id="dL" title="English: شمال ليمين">En</button></span>
-  <span class="tg" role="group" aria-label="عكس"><button id="fH" title="عكس أفقي (مراية)">⇆</button><button id="fV" title="عكس رأسي">⇅</button></span>
   <button class="btn" id="fsBtn">⛶ ملء الشاشة</button>
   <span id="status">جاهز</span>
 </div>
@@ -105,6 +102,7 @@ kbd{background:#232836;border:1px solid var(--line);border-radius:5px;padding:0 
   <div class="row"><label for="sPos">مكان السطر الحالي</label><input type="range" id="sPos" min="20" max="70" step="1"><output id="oPos"></output></div>
   <div class="row"><label for="sLang">لهجة التعرّف</label>
     <select id="sLang"><option value="ar-EG">عربي مصري</option><option value="ar-SA">عربي فصحى/سعودي</option><option value="ar-AE">عربي إماراتي</option><option value="en-US">English</option></select><span></span></div>
+  <div class="row"><label for="sMirror">عكس الشاشة (زجاج تيليبرومتر)</label><input type="checkbox" id="sMirror"><span></span></div>
   <div class="row"><label for="sSens">دقة المطابقة</label>
     <select id="sSens"><option value="strict">صارمة (أقل غلط)</option><option value="normal">عادية</option><option value="loose">مرنة (لو بيتأخر عنك)</option></select><span></span></div>
   <div class="row"><label>المايك المستخدم</label><span id="micName" style="font-size:12px;color:#8b92a3">—</span><span></span></div>
@@ -184,12 +182,11 @@ function paint(force){
   if(!target)return;
   const top=target.el.offsetTop;
   if(force||top!==lastTop){lastTop=top;scrollTo(target.el)}
-  if(pos>=words.length&&listening){stop()}
-  $('status').textContent=pos>=words.length?'خلص السكريبت 👏 — الاستماع اتقفل':`كلمة ${pos+1} من ${words.length}`;
+  $('status').textContent=pos>=words.length?'خلص السكريبت 👏':`كلمة ${pos+1} من ${words.length}`;
 }
 let anim=null;
 function scrollTo(el){
-  const st=$('stage'); const frac=(S.pos||45)/100;
+  const st=$('stage'); const frac=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pos'))/100||.5;
   const goal=el.offsetTop+el.offsetHeight/2-st.clientHeight*frac;
   cancelAnimationFrame(anim); const start=st.scrollTop,d=goal-start,t0=performance.now(),dur=matchMedia('(prefers-reduced-motion:reduce)').matches?0:450;
   const step=t=>{const k=dur?Math.min(1,(t-t0)/dur):1;st.scrollTop=start+d*(1-Math.pow(1-k,3));if(k<1)anim=requestAnimationFrame(step)};
@@ -223,6 +220,9 @@ function align(from,toks){
       for(let q=p+5;q<Math.min(words.length-2,p+120)&&!ok;q++){
         if(m(t[i],q)&&m(t[i+1],q+1)&&m(t[i+2],q+2)){
           const strong=[t[i],t[i+1],t[i+2]].filter(x=>!STOP.has(x)&&x.length>2).length;
+          // if the same phrase was already said behind us, this is a repeat, not a jump
+          let seen=false;for(let r=Math.max(0,p-80);r<p&&!seen;r++)if(m(t[i],r)&&m(t[i+1],r+1)&&m(t[i+2],r+2))seen=true;
+          if(seen){i+=3;ok=true;break}
           if(strong>=2){p=q+3;i+=3;ok=true}
         }
       }
@@ -235,7 +235,7 @@ function advance(from,toks){return align(from,toks)}
 
 /* ---------- speech ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null,listening=false,lastHeard=0,lastVoice=0,dog=0,gen=0;
+let denied=0,rec=null,listening=false,lastHeard=0,lastVoice=0,dog=0,gen=0;
 /* Chrome's free recognizer ends its session every so often (silence, ~1 min, network hiccup).
    We open a fresh session instantly, keep what the last session heard, and a watchdog
    restarts a session that went quiet while you are still talking. */
@@ -244,7 +244,7 @@ function openSession(){
   const r=new SR(); r.lang=$('sLang').value; r.continuous=true; r.interimResults=true; r.maxAlternatives=3;
   r.onresult=e=>{
     if(my!==gen)return;
-    lastHeard=performance.now();
+    lastHeard=performance.now();denied=0;
     let p=committed,allFinal=true,shown='';
     for(let i=e.resultIndex;i<e.results.length;i++){
       const x=e.results[i]; let best=p;
@@ -256,10 +256,11 @@ function openSession(){
     if(p>pos){pos=p;paint()}else if(committed>pos){pos=committed;paint()}
     // long sessions get slow: recycle right after a finished sentence
     if(allFinal&&e.results.length>=6)recycle();
+    // long sessions get slow: recycle right after a finished sentence
   };
   r.onerror=e=>{
     if(my!==gen)return;
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){$('status').textContent='المايك مرفوض. اسمح للمايك من علامة القفل جنب العنوان.';stop()}
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){denied=(denied||0)+1;if(mStream&&denied<4){return}$('status').textContent='Chrome رافض التعرّف على الصوت. اضغط على علامة المايك جنب العنوان واختار Allow.';stop()}
     else if(e.error==='network'){$('status').textContent='النت فصل لحظة… برجع أسمع'}
   };
   r.onend=()=>{if(my!==gen||!listening)return; committed=pos; openSession()};
@@ -267,9 +268,12 @@ function openSession(){
   try{r.start();lastHeard=performance.now()}catch(err){setTimeout(()=>listening&&my===gen&&openSession(),150)}
 }
 function recycle(){committed=pos;const old=rec;gen++;try{old.onend=null;old.abort()}catch(_){}if(listening)openSession()}
-function startRec(){
+async function startRec(){
   if(!SR){$('status').textContent='المتصفح ده مش بيدعم التعرّف على الصوت. افتح الملف في Google Chrome أو Edge.';return}
-  listening=true;setMic();startMeter();openSession();
+  $('status').textContent='بطلب إذن المايك…';
+  const ok=await startMeter();
+  if(!ok){$('status').textContent='المايك مش متاح. اضغط على علامة المايك جنب العنوان واختار Allow، وبعدين اضغط ابدأ تاني.';return}
+  listening=true;setMic();openSession();
   clearInterval(dog);
   dog=setInterval(()=>{ // you are talking but nothing arrives for 2.5s -> fresh session
     if(!listening)return;const now=performance.now();
@@ -278,12 +282,12 @@ function startRec(){
 }
 function stop(){listening=false;clearInterval(dog);stopMeter();gen++;try{rec&&rec.abort()}catch(_){}committed=pos;setMic()}
 function setMic(){$('mic').classList.toggle('on',listening);$('micTxt').textContent=listening?'إيقاف':'ابدأ الاستماع';if(listening)$('status').textContent='بسمعك… ابدأ اقرا'}
-const _start=startRec;startRec=function(){if(pos>=words.length){$('status').textContent='السكريبت خلص. اضغط «من الأول» أو اختار كلمة تبدأ منها';return}_start()};
 $('mic').onclick=()=>listening?stop():startRec();
 
 /* mic level meter + which mic Chrome uses */
 let mStream=null,mCtx=null,mRaf=0;
 async function startMeter(){
+  if(mStream){try{mCtx&&mCtx.resume()}catch(e){}return true}
   try{
     mStream=await navigator.mediaDevices.getUserMedia({audio:true});
     $('micName').textContent=mStream.getAudioTracks()[0].label||'المايك الافتراضي';
@@ -291,9 +295,10 @@ async function startMeter(){
     const d=new Uint8Array(an.fftSize);
     const tick=()=>{an.getByteTimeDomainData(d);let x=0;for(const v of d)x=Math.max(x,Math.abs(v-128));
       const pct=Math.min(100,x/1.1);if(pct>12)lastVoice=performance.now();$('lvlBar').style.width=pct+'%';$('lvlBar').style.background=pct>90?'#ff4d4d':pct<8?'#666':'#3ddc84';mRaf=requestAnimationFrame(tick)};tick();
-  }catch(e){}
+    return true;
+  }catch(e){return false}
 }
-function stopMeter(){cancelAnimationFrame(mRaf);try{mStream&&mStream.getTracks().forEach(t=>t.stop());mCtx&&mCtx.close()}catch(e){}mStream=mCtx=null;$('lvlBar').style.width='0'}
+function stopMeter(){/* mic stays open for the whole page so Chrome asks only once */}
 
 /* ---------- formatter: one complete sentence per line ---------- */
 function formatScript(t){
@@ -338,7 +343,7 @@ $('useBtn').onclick=()=>{const t=$('src').value.trim();if(!t)return;store.set('s
 $('resetBtn').onclick=()=>jump(0);
 
 /* ---------- settings ---------- */
-const DEF={font:"'Cairo',sans-serif",size:56,lh:1.7,width:900,fg:'#f4f1e8',bg:'#0d0f14',cur:'#ffc23d',said:'#5f6675',pos:45,lang:'ar-EG',sens:'normal',align:'right',dir:'rtl',fx:false,fy:false};
+const DEF={font:"'Cairo',sans-serif",size:56,lh:1.7,width:900,fg:'#f4f1e8',bg:'#0d0f14',cur:'#ffc23d',said:'#5f6675',pos:45,lang:'ar-EG',mirror:false,sens:'normal'};
 let S=Object.assign({},DEF,store.get('settings',{}));
 function applySettings(){
   const r=document.documentElement.style;
@@ -346,23 +351,16 @@ function applySettings(){
   r.setProperty('--fg',S.fg);r.setProperty('--bg',S.bg);r.setProperty('--cur',S.cur);r.setProperty('--said',S.said);
   r.setProperty('--curbg',S.cur+'29');r.setProperty('--pos',S.pos);
   $('guide').style.top=S.pos+'%';
-  r.setProperty('--align',S.align==='justify'?'justify':S.align);r.setProperty('--dir',S.dir);r.setProperty('--fx',S.fx?-1:1);r.setProperty('--fy',S.fy?-1:1);
-  $('guide').style.top=(S.fy?100-S.pos:S.pos)+'%';
-  [['aR','right'],['aC','center'],['aL','left'],['aJ','justify']].forEach(([id,v])=>$(id).classList.toggle('act',S.align===v));
-  $('dR').classList.toggle('act',S.dir==='rtl');$('dL').classList.toggle('act',S.dir==='ltr');$('fH').classList.toggle('act',S.fx);$('fV').classList.toggle('act',S.fy);
+  $('stage').classList.toggle('mirror',S.mirror);
   $('sFont').value=S.font;$('sSize').value=S.size;$('sLh').value=S.lh;$('sWidth').value=S.width;$('sFg').value=S.fg;$('sBg').value=S.bg;
-  $('sCur').value=S.cur;$('sSaid').value=S.said;$('sPos').value=S.pos;$('sLang').value=S.lang;$('sSens').value=S.sens;
+  $('sCur').value=S.cur;$('sSaid').value=S.said;$('sPos').value=S.pos;$('sLang').value=S.lang;$('sSens').value=S.sens;$('sMirror').checked=S.mirror;
   $('oSize').textContent=S.size;$('oLh').textContent=S.lh;$('oWidth').textContent=S.width;$('oPos').textContent=S.pos+'%';
   store.set('settings',S);
 }
 const map={sFont:'font',sSize:'size',sLh:'lh',sWidth:'width',sFg:'fg',sBg:'bg',sCur:'cur',sSaid:'said',sPos:'pos',sLang:'lang',sSens:'sens'};
 for(const id in map)$(id).addEventListener('input',e=>{const v=e.target.value;S[map[id]]=['size','width','pos'].includes(map[id])?+v:(map[id]==='lh'?+v:v);applySettings();paint(true);
   if(id==='sLang'&&listening){stop();startRec()}});
-[['aR','right'],['aC','center'],['aL','left'],['aJ','justify']].forEach(([id,v])=>$(id).onclick=()=>{S.align=v;applySettings();paint(true)});
-$('dR').onclick=()=>{S.dir='rtl';if(S.align==='left')S.align='right';applySettings();paint(true)};
-$('dL').onclick=()=>{S.dir='ltr';if(S.align==='right')S.align='left';if(S.lang.startsWith('ar'))S.lang='en-US';applySettings();paint(true)};
-$('fH').onclick=()=>{S.fx=!S.fx;applySettings()};
-$('fV').onclick=()=>{S.fy=!S.fy;applySettings();paint(true)};
+$('sMirror').onchange=e=>{S.mirror=e.target.checked;applySettings()};
 $('setBtn').onclick=()=>$('settings').hidden=!$('settings').hidden;
 $('closeSet').onclick=()=>$('settings').hidden=true;
 $('defBtn').onclick=()=>{S=Object.assign({},DEF);applySettings();paint(true)};
