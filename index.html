@@ -270,12 +270,16 @@ function applyUi(){
   setMic();if(typeof paint==='function'&&words.length)paint();else $('status').textContent=t('ready');
 }
 
-const SAMPLE_AR=`أهلاً بيك! ده سكريبت تجريبي.
-اضغط «السكريبت» والصق النص بتاعك أو ارفع ملف، وبعدين اضغط «ابدأ الاستماع» واقرا بصوت عالي.
-الملقّن بيمشي مع صوتك وبيخلي السطر اللي بتقراه دايماً في نص الشاشة.`;
-const SAMPLE_EN=`Hello and welcome! This is a sample script.
-Press “Script” to paste your own text or upload a file, then press “Start listening” and read aloud.
-The teleprompter follows your voice and keeps the current line in the middle of the screen.`;
+const SAMPLE_AR=`أهلاً بيك في Online Teleprompter من عمرو محمود.
+النجاح مش ضربة حظ، ده خطوة صغيرة بتتكرر كل يوم.
+اقرا الكلام ده بصوت عالي، وهتلاقي الملقّن ماشي مع صوتك كلمة بكلمة.
+لو وقفت هيستناك، ولو اتخطيت سطر هيلحقك.
+دلوقتي اضغط «السكريبت»، والصق كلامك أو ارفع ملف، وابدأ صوّر بثقة.`;
+const SAMPLE_EN=`Welcome to Online Teleprompter by Amr Mahmoud.
+Success is not luck. It is one small step, repeated every day.
+Read this out loud and watch the prompter follow your voice word by word.
+Pause and it waits for you. Skip a line and it catches up.
+Now press “Script”, paste your words or upload a file, and record with confidence.`;
 
 /* ---------- normalization & matching ---------- */
 function norm(w){
